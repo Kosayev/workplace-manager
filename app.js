@@ -1,118 +1,89 @@
 // Application Data and State
 const appData = {
-  departments: [
-    {"id": "general", "name": "庶務係", "color": "#4A90E2"},
-    {"id": "fire", "name": "警防係", "color": "#E74C3C"},
-    {"id": "prevention", "name": "予防係", "color": "#F39C12"},
-    {"id": "emergency", "name": "救急・救助係", "color": "#27AE60"},
-    {"id": "machinery", "name": "機械係", "color": "#9B59B6"}
-  ],
-  priorities: [
-    {"id": "urgent", "name": "緊急", "color": "#DC3545", "level": 4},
-    {"id": "high", "name": "重要度高", "color": "#FD7E14", "level": 3},
-    {"id": "medium", "name": "重要度中", "color": "#FFC107", "level": 2},
-    {"id": "low", "name": "重要度低", "color": "#28A745", "level": 1}
-  ],
-  schedules: [
-    {
-      "id": 1,
-      "title": "月次会議",
-      "department": "general",
-      "date": "2025-07-03",
-      "time": "09:00",
-      "description": "月次業務報告会議",
-      "duration": 120
-    },
-    {
-      "id": 2,
-      "title": "設備点検",
-      "department": "machinery",
-      "date": "2025-07-03",
-      "time": "14:00",
-      "description": "消防設備定期点検",
-      "duration": 180
-    },
-    {
-      "id": 3,
-      "title": "防火訓練",
-      "department": "fire",
-      "date": "2025-07-04",
-      "time": "10:00",
-      "description": "避難訓練および消火訓練",
-      "duration": 90
-    },
-    {
-      "id": 4,
-      "title": "予防査察",
-      "department": "prevention",
-      "date": "2025-07-04",
-      "time": "13:30",
-      "description": "事業所の予防査察実施",
-      "duration": 60
-    }
-  ],
-  handovers: [
-    {
-      "id": 1,
-      "department": "general",
-      "title": "書類確認",
-      "description": "月次報告書の確認が必要です。期限は明日まで。",
-      "timestamp": "2025-07-03T08:30:00",
-      "priority": "high",
-      "status": "pending"
-    },
-    {
-      "id": 2,
-      "department": "emergency",
-      "title": "救急車両点検",
-      "description": "救急車両の日常点検を実施。バッテリー交換が必要。",
-      "timestamp": "2025-07-03T07:00:00",
-      "priority": "urgent",
-      "status": "completed"
-    },
-    {
-      "id": 3,
-      "department": "fire",
-      "title": "消防設備確認",
-      "description": "消防設備の定期点検結果を確認してください。",
-      "timestamp": "2025-07-03T09:15:00",
-      "priority": "medium",
-      "status": "pending"
-    }
-  ],
-  tasks: [
-    {
-      "id": 1,
-      "title": "予算資料作成",
-      "department": "general",
-      "description": "来月の予算資料を作成する",
-      "priority": "medium",
-      "dueDate": "2025-07-10",
-      "completed": false,
-      "assignedBy": "田中係長"
-    },
-    {
-      "id": 2,
-      "title": "緊急設備修理",
-      "department": "machinery",
-      "description": "ポンプ設備の緊急修理対応",
-      "priority": "urgent",
-      "dueDate": "2025-07-04",
-      "completed": false,
-      "assignedBy": "佐藤主任"
-    },
-    {
-      "id": 3,
-      "title": "訓練計画立案",
-      "department": "fire",
-      "description": "来月の防火訓練計画を立案",
-      "priority": "high",
-      "dueDate": "2025-07-08",
-      "completed": false,
-      "assignedBy": "山田主任"
-    }
-  ]
+  departments: [],
+  priorities: [],
+  schedules: [],
+  handovers: [],
+  tasks: []
 };
+
+// データベースから基本データを読み込む
+async function loadBasicData() {
+  try {
+    // 部署データを取得
+    const { data: departments, error: deptError } = await supabase
+      .from('departments')
+      .select('*');
+    
+    if (deptError) throw deptError;
+    appData.departments = departments;
+
+    // 優先度データを取得
+    const { data: priorities, error: priorityError } = await supabase
+      .from('priorities')
+      .select('*')
+      .order('level', { ascending: false });
+    
+    if (priorityError) throw priorityError;
+    appData.priorities = priorities;
+
+    console.log('基本データの読み込み完了');
+  } catch (error) {
+    console.error('基本データの読み込みエラー:', error);
+  }
+}
+
+// データベースからスケジュールを読み込む
+async function loadSchedules() {
+  try {
+    const { data: schedules, error } = await supabase
+      .from('schedules')
+      .select('*')
+      .order('date', { ascending: true });
+    
+    if (error) throw error;
+    appData.schedules = schedules;
+    console.log('スケジュールデータの読み込み完了');
+  } catch (error) {
+    console.error('スケジュールデータの読み込みエラー:', error);
+  }
+}
+
+// データベースから申し送り事項を読み込む
+async function loadHandovers() {
+  try {
+    const { data: handovers, error } = await supabase
+      .from('handovers')
+      .select('*')
+      .order('timestamp', { ascending: false });
+    
+    if (error) throw error;
+    appData.handovers = handovers;
+    console.log('申し送り事項データの読み込み完了');
+  } catch (error) {
+    console.error('申し送り事項データの読み込みエラー:', error);
+  }
+}
+
+// データベースからタスクを読み込む
+async function loadTasks() {
+  try {
+    const { data: tasks, error } = await supabase
+      .from('tasks')
+      .select('*')
+      .order('due_date', { ascending: true });
+    
+    if (error) throw error;
+    appData.tasks = tasks.map(task => ({
+      ...task,
+      dueDate: task.due_date,
+      assignedBy: task.assigned_by
+    }));
+    console.log('タスクデータの読み込み完了');
+  } catch (error) {
+    console.error('タスクデータの読み込みエラー:', error);
+  }
+}
 
 let currentCalendarDate = new Date();
 let currentSection = 'dashboard';
@@ -366,11 +337,24 @@ function renderTasksGrid() {
   `).join('');
 }
 
-function toggleTaskCompletion(taskId) {
-  const task = appData.tasks.find(t => t.id === taskId);
-  if (task) {
-    task.completed = !task.completed;
+async function toggleTaskCompletion(taskId) {
+  try {
+    const task = appData.tasks.find(t => t.id === taskId);
+    if (!task) return;
+    
+    const { data, error } = await supabase
+      .from('tasks')
+      .update({ completed: !task.completed })
+      .eq('id', taskId)
+      .select();
+    
+    if (error) throw error;
+    
+    await loadTasks();
     renderTasksGrid();
+  } catch (error) {
+    console.error('タスク更新エラー:', error);
+    alert('タスクの更新に失敗しました');
   }
 }
 
@@ -591,11 +575,10 @@ function showTaskModal() {
 }
 
 // Add Functions
-function addSchedule(event) {
+async function addSchedule(event) {
   event.preventDefault();
   const formData = new FormData(event.target);
   const newSchedule = {
-    id: getNextId(appData.schedules),
     title: formData.get('title'),
     department: formData.get('department'),
     date: formData.get('date'),
@@ -604,71 +587,116 @@ function addSchedule(event) {
     duration: 60
   };
   
-  appData.schedules.push(newSchedule);
-  document.getElementById('modal').classList.remove('active');
-  
-  if (currentSection === 'dashboard') {
-    renderDashboard();
-  } else if (currentSection === 'calendar') {
-    renderCalendar();
+  try {
+    const { data, error } = await supabase
+      .from('schedules')
+      .insert([newSchedule])
+      .select();
+    
+    if (error) throw error;
+    
+    await loadSchedules();
+    document.getElementById('modal').classList.remove('active');
+    
+    if (currentSection === 'dashboard') {
+      renderDashboard();
+    } else if (currentSection === 'calendar') {
+      renderCalendar();
+    }
+  } catch (error) {
+    console.error('スケジュール追加エラー:', error);
+    alert('スケジュールの追加に失敗しました');
   }
 }
 
-function addHandover(event) {
+async function addHandover(event) {
   event.preventDefault();
   const formData = new FormData(event.target);
   const newHandover = {
-    id: getNextId(appData.handovers),
     department: formData.get('department'),
     title: formData.get('title'),
     description: formData.get('description'),
     priority: formData.get('priority'),
-    timestamp: new Date().toISOString(),
     status: 'pending'
   };
   
-  appData.handovers.push(newHandover);
-  document.getElementById('modal').classList.remove('active');
-  
-  if (currentSection === 'handovers') {
-    renderHandovers();
+  try {
+    const { data, error } = await supabase
+      .from('handovers')
+      .insert([newHandover])
+      .select();
+    
+    if (error) throw error;
+    
+    await loadHandovers();
+    document.getElementById('modal').classList.remove('active');
+    
+    if (currentSection === 'handovers') {
+      renderHandovers();
+    }
+  } catch (error) {
+    console.error('申し送り追加エラー:', error);
+    alert('申し送り事項の追加に失敗しました');
   }
 }
 
-function addTask(event) {
+async function addTask(event) {
   event.preventDefault();
   const formData = new FormData(event.target);
   const newTask = {
-    id: getNextId(appData.tasks),
     title: formData.get('title'),
     department: formData.get('department'),
     description: formData.get('description'),
     priority: formData.get('priority'),
-    dueDate: formData.get('dueDate'),
-    assignedBy: formData.get('assignedBy'),
+    due_date: formData.get('dueDate'),
+    assigned_by: formData.get('assignedBy'),
     completed: false
   };
   
-  appData.tasks.push(newTask);
-  document.getElementById('modal').classList.remove('active');
-  
-  if (currentSection === 'tasks') {
-    renderTasks();
+  try {
+    const { data, error } = await supabase
+      .from('tasks')
+      .insert([newTask])
+      .select();
+    
+    if (error) throw error;
+    
+    await loadTasks();
+    document.getElementById('modal').classList.remove('active');
+    
+    if (currentSection === 'tasks') {
+      renderTasks();
+    }
+  } catch (error) {
+    console.error('タスク追加エラー:', error);
+    alert('タスクの追加に失敗しました');
   }
 }
 
 // Initialize Application
-function initializeApp() {
-  initializeNavigation();
-  initializeModal();
-  
-  // Add event listeners for add buttons
-  document.getElementById('add-schedule-btn').addEventListener('click', showScheduleModal);
-  document.getElementById('add-handover-btn').addEventListener('click', showHandoverModal);
-  document.getElementById('add-task-btn').addEventListener('click', showTaskModal);
-  
-  // Show initial section
-  showSection('dashboard');
+async function initializeApp() {
+  try {
+    // データベースからデータを読み込み
+    await loadBasicData();
+    await loadSchedules();
+    await loadHandovers();
+    await loadTasks();
+    
+    initializeNavigation();
+    initializeModal();
+    
+    // Add event listeners for add buttons
+    document.getElementById('add-schedule-btn').addEventListener('click', showScheduleModal);
+    document.getElementById('add-handover-btn').addEventListener('click', showHandoverModal);
+    document.getElementById('add-task-btn').addEventListener('click', showTaskModal);
+    
+    // Show initial section
+    showSection('dashboard');
+  } catch (error) {
+    console.error('アプリケーション初期化エラー:', error);
+    // フォールバック: ローカルデータで動作
+    showSection('dashboard');
+  }
 }
 
 // Start the application when DOM is loaded
