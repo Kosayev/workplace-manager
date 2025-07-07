@@ -1,0 +1,19 @@
+{
+  "name": "workplace-manager",
+  "version": "1.0.0",
+  "description": "職場管理システム - 消防署向け管理アプリケーション",
+  "main": "index.html",
+  "scripts": {
+    "start": "python3 -m http.server 8000",
+    "dev": "python3 -m http.server 8000"
+  },
+  "keywords": [
+    "workplace",
+    "management",
+    "fire-department",
+    "schedule",
+    "tasks"
+  ],
+  "author": "",
+  "license": "MIT"
+}
