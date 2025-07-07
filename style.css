@@ -1296,3 +1296,135 @@ body {
     margin-top: var(--space-8);
   }
 }
+
+/* Day Schedule Modal Styles */
+.day-schedule-modal {
+  max-width: 600px;
+  width: 100%;
+}
+
+.day-schedule-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-20);
+  padding-bottom: var(--space-16);
+  border-bottom: 1px solid var(--color-card-border);
+}
+
+.day-schedule-header h3 {
+  margin: 0;
+  color: var(--color-text);
+  font-size: var(--font-size-xl);
+}
+
+.day-schedule-list {
+  max-height: 400px;
+  overflow-y: auto;
+  margin-bottom: var(--space-20);
+}
+
+.day-schedule-item {
+  display: flex;
+  align-items: flex-start;
+  padding: var(--space-16);
+  border-radius: var(--radius-base);
+  border: 1px solid var(--color-card-border);
+  margin-bottom: var(--space-12);
+  background-color: var(--color-surface);
+  transition: box-shadow var(--duration-fast) var(--ease-standard);
+}
+
+.day-schedule-item:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.day-schedule-time {
+  background-color: var(--color-primary);
+  color: var(--color-btn-primary-text);
+  padding: var(--space-6) var(--space-12);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  margin-right: var(--space-16);
+  min-width: 60px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.day-schedule-details {
+  flex: 1;
+  margin-right: var(--space-12);
+}
+
+.day-schedule-title {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+  margin-bottom: var(--space-4);
+  font-size: var(--font-size-base);
+}
+
+.day-schedule-description {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--space-6);
+  line-height: 1.4;
+}
+
+.day-schedule-department {
+  padding: var(--space-2) var(--space-8);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: white;
+  display: inline-block;
+}
+
+.day-schedule-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  flex-shrink: 0;
+}
+
+/* Calendar day hover effect */
+.calendar-day {
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--ease-standard);
+}
+
+.calendar-day:hover {
+  background-color: var(--color-secondary-hover) !important;
+}
+
+.calendar-day.today:hover {
+  background-color: var(--color-primary-hover) !important;
+}
+
+/* Mobile responsiveness for day schedule modal */
+@media (max-width: 768px) {
+  .day-schedule-header {
+    flex-direction: column;
+    gap: var(--space-12);
+    align-items: stretch;
+  }
+  
+  .day-schedule-item {
+    flex-direction: column;
+    gap: var(--space-12);
+  }
+  
+  .day-schedule-time {
+    align-self: flex-start;
+    margin-right: 0;
+  }
+  
+  .day-schedule-actions {
+    flex-direction: row;
+    justify-content: flex-start;
+  }
+  
+  .day-schedule-details {
+    margin-right: 0;
+  }
+}

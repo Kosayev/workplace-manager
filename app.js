@@ -484,7 +484,7 @@ function renderCalendarGrid() {
     if (isToday) dayClass += ' today';
     
     html += `
-      <div class="${dayClass}" data-date="${dateStr}">
+      <div class="${dayClass}" data-date="${dateStr}" onclick="showDaySchedules('${dateStr}')">
         <div class="calendar-day-number">${currentDate.getDate()}</div>
         ${daySchedules.map(schedule => `
           <div class="calendar-event" style="background-color: ${getDepartmentColor(schedule.department)}">
@@ -907,6 +907,249 @@ async function updateHandover(event, id) {
   } catch (error) {
     console.error('申し送り更新エラー:', error);
     alert('申し送り事項の更新に失敗しました');
+  }
+}
+
+// Day Schedule Modal Functions
+async function showDaySchedules(dateStr) {
+  console.log('日別予定表示:', dateStr);
+  
+  // データが読み込まれていない場合は読み込み
+  if (appData.schedules.length === 0) {
+    await loadSchedules();
+  }
+  
+  if (appData.departments.length === 0) {
+    await loadBasicData();
+  }
+  
+  const daySchedules = appData.schedules.filter(s => s.date === dateStr);
+  const formattedDate = formatDate(dateStr);
+  
+  const schedulesList = daySchedules.length > 0 
+    ? daySchedules.map(schedule => `
+        <div class="day-schedule-item">
+          <div class="day-schedule-time">${formatTime(schedule.time)}</div>
+          <div class="day-schedule-details">
+            <div class="day-schedule-title">${schedule.title}</div>
+            <div class="day-schedule-description">${schedule.description || ''}</div>
+            <div class="day-schedule-department" style="background-color: ${getDepartmentColor(schedule.department)}">
+              ${getDepartmentName(schedule.department)}
+            </div>
+          </div>
+          <div class="day-schedule-actions">
+            <button class="btn btn--sm btn--outline" onclick="editScheduleFromDay(${schedule.id})">編集</button>
+            <button class="btn btn--sm btn--outline" onclick="deleteScheduleFromDay(${schedule.id})" style="color: #dc3545; border-color: #dc3545;">削除</button>
+          </div>
+        </div>
+      `).join('')
+    : '<div class="empty-state">この日の予定はありません</div>';
+
+  const content = `
+    <div class="day-schedule-modal">
+      <div class="day-schedule-header">
+        <h3>${formattedDate}の予定</h3>
+        <button class="btn btn--primary btn--sm" onclick="addScheduleForDay('${dateStr}')">
+          <span>➕</span>
+          予定追加
+        </button>
+      </div>
+      <div class="day-schedule-list">
+        ${schedulesList}
+      </div>
+      <div class="modal-buttons">
+        <button type="button" class="btn btn--outline" onclick="document.getElementById('modal').classList.remove('active')">閉じる</button>
+      </div>
+    </div>
+  `;
+  
+  showModal(`${formattedDate}の予定`, content);
+}
+
+async function addScheduleForDay(dateStr) {
+  // データが読み込まれていない場合は読み込み
+  if (appData.departments.length === 0) {
+    await loadBasicData();
+  }
+  
+  const content = `
+    <form class="modal-form" onsubmit="addScheduleForSpecificDay(event, '${dateStr}')">
+      <div class="form-group">
+        <label class="form-label">タイトル</label>
+        <input type="text" class="form-control" name="title" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">部署</label>
+        <select class="form-control" name="department" required>
+          <option value="">部署を選択してください</option>
+          ${appData.departments.map(dept => `<option value="${dept.id}">${dept.name}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">日付</label>
+        <input type="date" class="form-control" name="date" value="${dateStr}" required readonly>
+      </div>
+      <div class="form-group">
+        <label class="form-label">時間</label>
+        <input type="time" class="form-control" name="time" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">説明</label>
+        <textarea class="form-control" name="description" rows="3"></textarea>
+      </div>
+      <div class="modal-buttons">
+        <button type="button" class="btn btn--outline" onclick="showDaySchedules('${dateStr}')">戻る</button>
+        <button type="submit" class="btn btn--primary">追加</button>
+      </div>
+    </form>
+  `;
+  showModal(`${formatDate(dateStr)}に予定追加`, content);
+}
+
+async function addScheduleForSpecificDay(event, dateStr) {
+  event.preventDefault();
+  const formData = new FormData(event.target);
+  const newSchedule = {
+    title: formData.get('title'),
+    department: formData.get('department'),
+    date: dateStr,
+    time: formData.get('time'),
+    description: formData.get('description') || '',
+    duration: 60
+  };
+  
+  try {
+    const { data, error } = await supabase
+      .from('schedules')
+      .insert([newSchedule])
+      .select();
+    
+    if (error) throw error;
+    
+    await loadSchedules();
+    
+    // カレンダーを更新
+    if (currentSection === 'calendar') {
+      renderCalendar();
+    }
+    
+    // 日別予定モーダルに戻る
+    showDaySchedules(dateStr);
+  } catch (error) {
+    console.error('スケジュール追加エラー:', error);
+    alert('スケジュールの追加に失敗しました');
+  }
+}
+
+async function editScheduleFromDay(id) {
+  const schedule = appData.schedules.find(s => s.id === id);
+  if (!schedule) return;
+  
+  // データが読み込まれていない場合は読み込み
+  if (appData.departments.length === 0) {
+    await loadBasicData();
+  }
+  
+  const content = `
+    <form class="modal-form" onsubmit="updateScheduleFromDay(event, ${id}, '${schedule.date}')">
+      <div class="form-group">
+        <label class="form-label">タイトル</label>
+        <input type="text" class="form-control" name="title" value="${schedule.title}" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">部署</label>
+        <select class="form-control" name="department" required>
+          ${appData.departments.map(dept => 
+            `<option value="${dept.id}" ${dept.id === schedule.department ? 'selected' : ''}>${dept.name}</option>`
+          ).join('')}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">日付</label>
+        <input type="date" class="form-control" name="date" value="${schedule.date}" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">時間</label>
+        <input type="time" class="form-control" name="time" value="${schedule.time}" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">説明</label>
+        <textarea class="form-control" name="description" rows="3">${schedule.description || ''}</textarea>
+      </div>
+      <div class="modal-buttons">
+        <button type="button" class="btn btn--outline" onclick="showDaySchedules('${schedule.date}')">戻る</button>
+        <button type="submit" class="btn btn--primary">更新</button>
+      </div>
+    </form>
+  `;
+  showModal('予定編集', content);
+}
+
+async function updateScheduleFromDay(event, id, originalDate) {
+  event.preventDefault();
+  const formData = new FormData(event.target);
+  const updatedSchedule = {
+    title: formData.get('title'),
+    department: formData.get('department'),
+    date: formData.get('date'),
+    time: formData.get('time'),
+    description: formData.get('description') || '',
+    duration: 60
+  };
+  
+  try {
+    const { data, error } = await supabase
+      .from('schedules')
+      .update(updatedSchedule)
+      .eq('id', id)
+      .select();
+    
+    if (error) throw error;
+    
+    await loadSchedules();
+    
+    // カレンダーを更新
+    if (currentSection === 'calendar') {
+      renderCalendar();
+    }
+    
+    // 日別予定モーダルに戻る（日付が変更された場合は新しい日付で表示）
+    const newDate = formData.get('date');
+    showDaySchedules(newDate);
+  } catch (error) {
+    console.error('スケジュール更新エラー:', error);
+    alert('スケジュールの更新に失敗しました');
+  }
+}
+
+async function deleteScheduleFromDay(id) {
+  if (!confirm('この予定を削除しますか？')) return;
+  
+  const schedule = appData.schedules.find(s => s.id === id);
+  const originalDate = schedule?.date;
+  
+  try {
+    const { error } = await supabase
+      .from('schedules')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+    
+    await loadSchedules();
+    
+    // カレンダーを更新
+    if (currentSection === 'calendar') {
+      renderCalendar();
+    }
+    
+    // 日別予定モーダルを更新
+    if (originalDate) {
+      showDaySchedules(originalDate);
+    }
+  } catch (error) {
+    console.error('スケジュール削除エラー:', error);
+    alert('スケジュールの削除に失敗しました');
   }
 }
 
