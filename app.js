@@ -229,13 +229,19 @@ function renderScheduleList(containerId, date) {
 }
 
 // Handovers Functions
-function renderHandovers() {
-  renderHandoverTabs();
+async function renderHandovers() {
+  await renderHandoverTabs();
   renderHandoverContent();
 }
 
-function renderHandoverTabs() {
+async function renderHandoverTabs() {
   const tabsContainer = document.getElementById('handover-tabs');
+  
+  // データが読み込まれていない場合は読み込み
+  if (appData.departments.length === 0) {
+    await loadBasicData();
+  }
+  
   tabsContainer.innerHTML = appData.departments.map(dept => `
     <button class="tab-button ${dept.id === activeHandoverDept ? 'active' : ''}" 
             data-department="${dept.id}">
@@ -276,14 +282,19 @@ function renderHandoverContent() {
 }
 
 // Tasks Functions
-function renderTasks() {
-  renderTaskFilters();
+async function renderTasks() {
+  await renderTaskFilters();
   renderTasksGrid();
 }
 
-function renderTaskFilters() {
+async function renderTaskFilters() {
   const deptFilter = document.getElementById('task-department-filter');
   const priorityFilter = document.getElementById('task-priority-filter');
+  
+  // データが読み込まれていない場合は読み込み
+  if (appData.departments.length === 0 || appData.priorities.length === 0) {
+    await loadBasicData();
+  }
   
   deptFilter.innerHTML = '<option value="">全部署</option>' + 
     appData.departments.map(dept => `<option value="${dept.id}">${dept.name}</option>`).join('');
@@ -468,7 +479,12 @@ function showModal(title, content) {
   modal.classList.add('active');
 }
 
-function showScheduleModal() {
+async function showScheduleModal() {
+  // データが読み込まれていない場合は読み込み
+  if (appData.departments.length === 0) {
+    await loadBasicData();
+  }
+  
   const content = `
     <form class="modal-form" onsubmit="addSchedule(event)">
       <div class="form-group">
@@ -502,7 +518,12 @@ function showScheduleModal() {
   showModal('スケジュール追加', content);
 }
 
-function showHandoverModal() {
+async function showHandoverModal() {
+  // データが読み込まれていない場合は読み込み
+  if (appData.departments.length === 0 || appData.priorities.length === 0) {
+    await loadBasicData();
+  }
+  
   const content = `
     <form class="modal-form" onsubmit="addHandover(event)">
       <div class="form-group">
@@ -534,7 +555,12 @@ function showHandoverModal() {
   showModal('申し送り追加', content);
 }
 
-function showTaskModal() {
+async function showTaskModal() {
+  // データが読み込まれていない場合は読み込み
+  if (appData.departments.length === 0 || appData.priorities.length === 0) {
+    await loadBasicData();
+  }
+  
   const content = `
     <form class="modal-form" onsubmit="addTask(event)">
       <div class="form-group">
