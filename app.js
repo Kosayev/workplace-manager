@@ -10,26 +10,68 @@ const appData = {
 // データベースから基本データを読み込む
 async function loadBasicData() {
   try {
+    console.log('基本データの読み込み開始...');
+    
+    // Supabaseクライアントの確認
+    if (!window.supabase) {
+      console.error('Supabaseクライアントが初期化されていません');
+      return;
+    }
+    
+    console.log('Supabase URL:', SUPABASE_URL);
+    console.log('Supabase接続確認:', !!supabase);
+
     // 部署データを取得
+    console.log('部署データを取得中...');
     const { data: departments, error: deptError } = await supabase
       .from('departments')
       .select('*');
     
-    if (deptError) throw deptError;
-    appData.departments = departments;
+    if (deptError) {
+      console.error('部署データ取得エラー:', deptError);
+      throw deptError;
+    }
+    
+    console.log('取得した部署データ:', departments);
+    appData.departments = departments || [];
 
     // 優先度データを取得
+    console.log('優先度データを取得中...');
     const { data: priorities, error: priorityError } = await supabase
       .from('priorities')
       .select('*')
       .order('level', { ascending: false });
     
-    if (priorityError) throw priorityError;
-    appData.priorities = priorities;
+    if (priorityError) {
+      console.error('優先度データ取得エラー:', priorityError);
+      throw priorityError;
+    }
+    
+    console.log('取得した優先度データ:', priorities);
+    appData.priorities = priorities || [];
 
-    console.log('基本データの読み込み完了');
+    console.log('基本データの読み込み完了:', {
+      departments: appData.departments.length,
+      priorities: appData.priorities.length
+    });
   } catch (error) {
     console.error('基本データの読み込みエラー:', error);
+    
+    // フォールバック: 静的データを使用
+    console.log('フォールバックデータを使用');
+    appData.departments = [
+      {"id": "general", "name": "庶務係", "color": "#4A90E2"},
+      {"id": "fire", "name": "警防係", "color": "#E74C3C"},
+      {"id": "prevention", "name": "予防係", "color": "#F39C12"},
+      {"id": "emergency", "name": "救急・救助係", "color": "#27AE60"},
+      {"id": "machinery", "name": "機械係", "color": "#9B59B6"}
+    ];
+    appData.priorities = [
+      {"id": "urgent", "name": "緊急", "color": "#DC3545", "level": 4},
+      {"id": "high", "name": "重要度高", "color": "#FD7E14", "level": 3},
+      {"id": "medium", "name": "重要度中", "color": "#FFC107", "level": 2},
+      {"id": "low", "name": "重要度低", "color": "#28A745", "level": 1}
+    ];
   }
 }
 
@@ -480,10 +522,23 @@ function showModal(title, content) {
 }
 
 async function showScheduleModal() {
+  console.log('スケジュールモーダル表示開始');
+  console.log('現在の部署データ:', appData.departments);
+  
   // データが読み込まれていない場合は読み込み
   if (appData.departments.length === 0) {
+    console.log('部署データが空のため再読み込み');
     await loadBasicData();
   }
+  
+  console.log('モーダル作成時の部署数:', appData.departments.length);
+  
+  const departmentOptions = appData.departments.map(dept => {
+    console.log('部署オプション作成:', dept);
+    return `<option value="${dept.id}">${dept.name}</option>`;
+  }).join('');
+  
+  console.log('生成された部署オプション:', departmentOptions);
   
   const content = `
     <form class="modal-form" onsubmit="addSchedule(event)">
@@ -494,7 +549,8 @@ async function showScheduleModal() {
       <div class="form-group">
         <label class="form-label">部署</label>
         <select class="form-control" name="department" required>
-          ${appData.departments.map(dept => `<option value="${dept.id}">${dept.name}</option>`).join('')}
+          <option value="">部署を選択してください</option>
+          ${departmentOptions}
         </select>
       </div>
       <div class="form-group">
