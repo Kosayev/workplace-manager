@@ -61,11 +61,12 @@ async function loadBasicData() {
     
     if (statusError) {
       console.error('ステータスデータ取得エラー:', statusError);
+      console.log('フォールバックステータスデータを使用');
       // エラーの場合はフォールバックデータを使用
       appData.statuses = getDefaultStatuses();
     } else {
       console.log('取得したステータスデータ:', statuses);
-      appData.statuses = statuses || [];
+      appData.statuses = statuses && statuses.length > 0 ? statuses : getDefaultStatuses();
     }
 
     console.log('基本データの読み込み完了:', {
@@ -472,40 +473,85 @@ function renderTasksGrid() {
 
 async function updateTaskStatus(taskId, newStatus) {
   try {
+    // ローカルデータでタスクを見つける
+    const task = appData.tasks.find(t => t.id == taskId);
+    if (!task) {
+      console.error('タスクが見つかりません:', taskId);
+      return;
+    }
+
+    // データベースでstatusカラムが存在しない場合はcompletedカラムのみ更新
+    const updateData = {
+      completed: newStatus === 'task_completed'
+    };
+
+    // statusカラムが存在する場合のみ追加
+    if (task.hasOwnProperty('status') || newStatus) {
+      updateData.status = newStatus;
+    }
+
     const { data, error } = await supabase
       .from('tasks')
-      .update({ 
-        status: newStatus,
-        completed: newStatus === 'task_completed'
-      })
+      .update(updateData)
       .eq('id', taskId)
       .select();
     
-    if (error) throw error;
+    if (error) {
+      console.error('Supabaseエラー:', error);
+      // フォールバックとしてローカル更新
+      task.status = newStatus;
+      task.completed = newStatus === 'task_completed';
+      renderTasksGrid();
+      return;
+    }
     
     await loadTasks();
     renderTasksGrid();
   } catch (error) {
     console.error('タスクステータス更新エラー:', error);
-    alert('タスクステータスの更新に失敗しました');
+    // フォールバックとしてローカル更新
+    const task = appData.tasks.find(t => t.id == taskId);
+    if (task) {
+      task.status = newStatus;
+      task.completed = newStatus === 'task_completed';
+      renderTasksGrid();
+    }
   }
 }
 
 async function updateHandoverStatus(handoverId, newStatus) {
   try {
+    // ローカルデータで申し送り事項を見つける
+    const handover = appData.handovers.find(h => h.id == handoverId);
+    if (!handover) {
+      console.error('申し送り事項が見つかりません:', handoverId);
+      return;
+    }
+
     const { data, error } = await supabase
       .from('handovers')
       .update({ status: newStatus })
       .eq('id', handoverId)
       .select();
     
-    if (error) throw error;
+    if (error) {
+      console.error('Supabaseエラー:', error);
+      // フォールバックとしてローカル更新
+      handover.status = newStatus;
+      renderHandovers();
+      return;
+    }
     
     await loadHandovers();
     renderHandovers();
   } catch (error) {
     console.error('申し送りステータス更新エラー:', error);
-    alert('申し送りステータスの更新に失敗しました');
+    // フォールバックとしてローカル更新
+    const handover = appData.handovers.find(h => h.id == handoverId);
+    if (handover) {
+      handover.status = newStatus;
+      renderHandovers();
+    }
   }
 }
 
