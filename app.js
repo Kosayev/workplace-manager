@@ -2,6 +2,7 @@
 const appData = {
   departments: [],
   priorities: [],
+  statuses: [],
   schedules: [],
   handovers: [],
   tasks: []
@@ -50,9 +51,27 @@ async function loadBasicData() {
     console.log('取得した優先度データ:', priorities);
     appData.priorities = priorities || [];
 
+    // ステータスデータを取得
+    console.log('ステータスデータを取得中...');
+    const { data: statuses, error: statusError } = await supabase
+      .from('statuses')
+      .select('*')
+      .order('category', { ascending: true })
+      .order('order_index', { ascending: true });
+    
+    if (statusError) {
+      console.error('ステータスデータ取得エラー:', statusError);
+      // エラーの場合はフォールバックデータを使用
+      appData.statuses = getDefaultStatuses();
+    } else {
+      console.log('取得したステータスデータ:', statuses);
+      appData.statuses = statuses || [];
+    }
+
     console.log('基本データの読み込み完了:', {
       departments: appData.departments.length,
-      priorities: appData.priorities.length
+      priorities: appData.priorities.length,
+      statuses: appData.statuses.length
     });
   } catch (error) {
     console.error('基本データの読み込みエラー:', error);
@@ -73,6 +92,7 @@ async function loadBasicData() {
       {"id": "medium", "name": "重要度中", "color": "#FFC107", "level": 2},
       {"id": "low", "name": "重要度低", "color": "#28A745", "level": 1}
     ];
+    appData.statuses = getDefaultStatuses();
   }
 }
 
@@ -175,6 +195,33 @@ function getPriorityColor(id) {
 
 function getNextId(array) {
   return Math.max(...array.map(item => item.id), 0) + 1;
+}
+
+function getDefaultStatuses() {
+  return [
+    // タスク用ステータス
+    {"id": "task_not_started", "name": "未着手", "color": "#6C757D", "category": "task", "order_index": 1},
+    {"id": "task_in_progress", "name": "対応中", "color": "#FFC107", "category": "task", "order_index": 2},
+    {"id": "task_completed", "name": "対応済", "color": "#28A745", "category": "task", "order_index": 3},
+    {"id": "task_on_hold", "name": "保留中", "color": "#FD7E14", "category": "task", "order_index": 4},
+    // 申し送り用ステータス
+    {"id": "handover_pending", "name": "未確認", "color": "#6C757D", "category": "handover", "order_index": 1},
+    {"id": "handover_acknowledged", "name": "確認済", "color": "#17A2B8", "category": "handover", "order_index": 2},
+    {"id": "handover_in_progress", "name": "対応中", "color": "#FFC107", "category": "handover", "order_index": 3},
+    {"id": "handover_completed", "name": "完了", "color": "#28A745", "category": "handover", "order_index": 4}
+  ];
+}
+
+function getStatusName(id) {
+  return appData.statuses.find(s => s.id === id)?.name || id;
+}
+
+function getStatusColor(id) {
+  return appData.statuses.find(s => s.id === id)?.color || '#6C757D';
+}
+
+function getStatusesByCategory(category) {
+  return appData.statuses.filter(s => s.category === category);
 }
 
 // Navigation Functions
@@ -322,6 +369,17 @@ function renderHandoverContent() {
       <div class="handover-details">
         <div class="handover-title">${handover.title}</div>
         <div class="handover-description">${handover.description}</div>
+        <div class="handover-status-section">
+          <label class="handover-status-label">ステータス:</label>
+          <select class="handover-status-select" onchange="updateHandoverStatus(${handover.id}, this.value)">
+            ${getStatusesByCategory('handover').map(status => 
+              `<option value="${status.id}" ${status.id === handover.status ? 'selected' : ''}>${status.name}</option>`
+            ).join('')}
+          </select>
+          <span class="handover-status-badge" style="background-color: ${getStatusColor(handover.status)}">
+            ${getStatusName(handover.status)}
+          </span>
+        </div>
         <div class="handover-timestamp">${formatDateTime(handover.timestamp)}</div>
       </div>
       <div class="handover-actions">
@@ -385,10 +443,19 @@ function renderTasksGrid() {
         <span class="task-priority priority-${task.priority}">${getPriorityName(task.priority)}</span>
       </div>
       <div class="task-description">${task.description}</div>
+      <div class="task-status-section">
+        <label class="task-status-label">ステータス:</label>
+        <select class="task-status-select" onchange="updateTaskStatus(${task.id}, this.value)">
+          ${getStatusesByCategory('task').map(status => 
+            `<option value="${status.id}" ${status.id === task.status ? 'selected' : ''}>${status.name}</option>`
+          ).join('')}
+        </select>
+        <span class="task-status-badge" style="background-color: ${getStatusColor(task.status)}">
+          ${getStatusName(task.status)}
+        </span>
+      </div>
       <div class="task-meta">
         <div>
-          <input type="checkbox" class="task-checkbox" ${task.completed ? 'checked' : ''} 
-                 onchange="toggleTaskCompletion(${task.id})">
           期限: ${formatDate(task.dueDate)}
         </div>
         <div style="color: ${getDepartmentColor(task.department)}">
@@ -403,14 +470,14 @@ function renderTasksGrid() {
   `).join('');
 }
 
-async function toggleTaskCompletion(taskId) {
+async function updateTaskStatus(taskId, newStatus) {
   try {
-    const task = appData.tasks.find(t => t.id === taskId);
-    if (!task) return;
-    
     const { data, error } = await supabase
       .from('tasks')
-      .update({ completed: !task.completed })
+      .update({ 
+        status: newStatus,
+        completed: newStatus === 'task_completed'
+      })
       .eq('id', taskId)
       .select();
     
@@ -419,8 +486,26 @@ async function toggleTaskCompletion(taskId) {
     await loadTasks();
     renderTasksGrid();
   } catch (error) {
-    console.error('タスク更新エラー:', error);
-    alert('タスクの更新に失敗しました');
+    console.error('タスクステータス更新エラー:', error);
+    alert('タスクステータスの更新に失敗しました');
+  }
+}
+
+async function updateHandoverStatus(handoverId, newStatus) {
+  try {
+    const { data, error } = await supabase
+      .from('handovers')
+      .update({ status: newStatus })
+      .eq('id', handoverId)
+      .select();
+    
+    if (error) throw error;
+    
+    await loadHandovers();
+    renderHandovers();
+  } catch (error) {
+    console.error('申し送りステータス更新エラー:', error);
+    alert('申し送りステータスの更新に失敗しました');
   }
 }
 

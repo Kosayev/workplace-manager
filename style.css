@@ -1297,6 +1297,85 @@ body {
   }
 }
 
+/* Status Section Styles */
+.task-status-section,
+.handover-status-section {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  margin: var(--space-12) 0;
+  padding: var(--space-8);
+  background-color: var(--color-secondary);
+  border-radius: var(--radius-sm);
+}
+
+.task-status-label,
+.handover-status-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  min-width: 70px;
+}
+
+.task-status-select,
+.handover-status-select {
+  padding: var(--space-4) var(--space-8);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: border-color var(--duration-fast) var(--ease-standard);
+}
+
+.task-status-select:focus,
+.handover-status-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.task-status-badge,
+.handover-status-badge {
+  padding: var(--space-4) var(--space-8);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  color: white;
+  white-space: nowrap;
+}
+
+/* Status-specific colors */
+.status-task_not_started { background-color: #6C757D; }
+.status-task_in_progress { background-color: #FFC107; }
+.status-task_completed { background-color: #28A745; }
+.status-task_on_hold { background-color: #FD7E14; }
+
+.status-handover_pending { background-color: #6C757D; }
+.status-handover_acknowledged { background-color: #17A2B8; }
+.status-handover_in_progress { background-color: #FFC107; }
+.status-handover_completed { background-color: #28A745; }
+
+/* Mobile responsiveness for status sections */
+@media (max-width: 768px) {
+  .task-status-section,
+  .handover-status-section {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-6);
+  }
+  
+  .task-status-label,
+  .handover-status-label {
+    min-width: auto;
+  }
+  
+  .task-status-select,
+  .handover-status-select {
+    width: 100%;
+  }
+}
+
 /* Day Schedule Modal Styles */
 .day-schedule-modal {
   max-width: 600px;
