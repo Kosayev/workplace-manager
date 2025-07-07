@@ -1,5 +1,5 @@
 // Supabase設定
-const SUPABASE_URL = 'https://iyeeaztigazomdxrofos.supabase.co';
+const SUPABASE_URL = 'https://iyeeaztidazomdxrofos.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml5ZWVhenRpZGF6b21keHJvZm9zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4ODI0MjksImV4cCI6MjA2NzQ1ODQyOX0.Qc7xqGS5mw7OL8nHKPuEJKnYj-as12hiOTUuy2LhYjM';
 
 // Supabaseクライアント初期化
