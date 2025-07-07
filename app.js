@@ -267,6 +267,10 @@ function renderScheduleList(containerId, date) {
           ${getDepartmentName(schedule.department)}
         </div>
       </div>
+      <div class="schedule-actions">
+        <button class="btn btn--sm btn--outline" onclick="editSchedule(${schedule.id})">編集</button>
+        <button class="btn btn--sm btn--outline" onclick="deleteSchedule(${schedule.id})" style="color: #dc3545; border-color: #dc3545;">削除</button>
+      </div>
     </div>
   `).join('');
 }
@@ -319,6 +323,10 @@ function renderHandoverContent() {
         <div class="handover-title">${handover.title}</div>
         <div class="handover-description">${handover.description}</div>
         <div class="handover-timestamp">${formatDateTime(handover.timestamp)}</div>
+      </div>
+      <div class="handover-actions">
+        <button class="btn btn--sm btn--outline" onclick="editHandover(${handover.id})">編集</button>
+        <button class="btn btn--sm btn--outline" onclick="deleteHandover(${handover.id})" style="color: #dc3545; border-color: #dc3545;">削除</button>
       </div>
     </div>
   `).join('');
@@ -386,6 +394,10 @@ function renderTasksGrid() {
         <div style="color: ${getDepartmentColor(task.department)}">
           ${getDepartmentName(task.department)}
         </div>
+      </div>
+      <div class="task-actions">
+        <button class="btn btn--sm btn--outline" onclick="editTask(${task.id})">編集</button>
+        <button class="btn btn--sm btn--outline" onclick="deleteTask(${task.id})" style="color: #dc3545; border-color: #dc3545;">削除</button>
       </div>
     </div>
   `).join('');
@@ -655,6 +667,316 @@ async function showTaskModal() {
     </form>
   `;
   showModal('タスク追加', content);
+}
+
+// Edit Functions
+async function editSchedule(id) {
+  const schedule = appData.schedules.find(s => s.id === id);
+  if (!schedule) return;
+  
+  // データが読み込まれていない場合は読み込み
+  if (appData.departments.length === 0) {
+    await loadBasicData();
+  }
+  
+  const content = `
+    <form class="modal-form" onsubmit="updateSchedule(event, ${id})">
+      <div class="form-group">
+        <label class="form-label">タイトル</label>
+        <input type="text" class="form-control" name="title" value="${schedule.title}" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">部署</label>
+        <select class="form-control" name="department" required>
+          ${appData.departments.map(dept => 
+            `<option value="${dept.id}" ${dept.id === schedule.department ? 'selected' : ''}>${dept.name}</option>`
+          ).join('')}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">日付</label>
+        <input type="date" class="form-control" name="date" value="${schedule.date}" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">時間</label>
+        <input type="time" class="form-control" name="time" value="${schedule.time}" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">説明</label>
+        <textarea class="form-control" name="description" rows="3">${schedule.description || ''}</textarea>
+      </div>
+      <div class="modal-buttons">
+        <button type="button" class="btn btn--outline" onclick="document.getElementById('modal').classList.remove('active')">キャンセル</button>
+        <button type="submit" class="btn btn--primary">更新</button>
+      </div>
+    </form>
+  `;
+  showModal('スケジュール編集', content);
+}
+
+async function editTask(id) {
+  const task = appData.tasks.find(t => t.id === id);
+  if (!task) return;
+  
+  // データが読み込まれていない場合は読み込み
+  if (appData.departments.length === 0 || appData.priorities.length === 0) {
+    await loadBasicData();
+  }
+  
+  const content = `
+    <form class="modal-form" onsubmit="updateTask(event, ${id})">
+      <div class="form-group">
+        <label class="form-label">タイトル</label>
+        <input type="text" class="form-control" name="title" value="${task.title}" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">部署</label>
+        <select class="form-control" name="department" required>
+          ${appData.departments.map(dept => 
+            `<option value="${dept.id}" ${dept.id === task.department ? 'selected' : ''}>${dept.name}</option>`
+          ).join('')}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">優先度</label>
+        <select class="form-control" name="priority" required>
+          ${appData.priorities.map(priority => 
+            `<option value="${priority.id}" ${priority.id === task.priority ? 'selected' : ''}>${priority.name}</option>`
+          ).join('')}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">期限</label>
+        <input type="date" class="form-control" name="dueDate" value="${task.dueDate}" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">内容</label>
+        <textarea class="form-control" name="description" rows="3" required>${task.description}</textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">担当者</label>
+        <input type="text" class="form-control" name="assignedBy" value="${task.assignedBy}" required>
+      </div>
+      <div class="modal-buttons">
+        <button type="button" class="btn btn--outline" onclick="document.getElementById('modal').classList.remove('active')">キャンセル</button>
+        <button type="submit" class="btn btn--primary">更新</button>
+      </div>
+    </form>
+  `;
+  showModal('タスク編集', content);
+}
+
+async function editHandover(id) {
+  const handover = appData.handovers.find(h => h.id === id);
+  if (!handover) return;
+  
+  // データが読み込まれていない場合は読み込み
+  if (appData.departments.length === 0 || appData.priorities.length === 0) {
+    await loadBasicData();
+  }
+  
+  const content = `
+    <form class="modal-form" onsubmit="updateHandover(event, ${id})">
+      <div class="form-group">
+        <label class="form-label">タイトル</label>
+        <input type="text" class="form-control" name="title" value="${handover.title}" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">部署</label>
+        <select class="form-control" name="department" required>
+          ${appData.departments.map(dept => 
+            `<option value="${dept.id}" ${dept.id === handover.department ? 'selected' : ''}>${dept.name}</option>`
+          ).join('')}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">優先度</label>
+        <select class="form-control" name="priority" required>
+          ${appData.priorities.map(priority => 
+            `<option value="${priority.id}" ${priority.id === handover.priority ? 'selected' : ''}>${priority.name}</option>`
+          ).join('')}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">内容</label>
+        <textarea class="form-control" name="description" rows="4" required>${handover.description}</textarea>
+      </div>
+      <div class="modal-buttons">
+        <button type="button" class="btn btn--outline" onclick="document.getElementById('modal').classList.remove('active')">キャンセル</button>
+        <button type="submit" class="btn btn--primary">更新</button>
+      </div>
+    </form>
+  `;
+  showModal('申し送り編集', content);
+}
+
+// Update Functions
+async function updateSchedule(event, id) {
+  event.preventDefault();
+  const formData = new FormData(event.target);
+  const updatedSchedule = {
+    title: formData.get('title'),
+    department: formData.get('department'),
+    date: formData.get('date'),
+    time: formData.get('time'),
+    description: formData.get('description') || '',
+    duration: 60
+  };
+  
+  try {
+    const { data, error } = await supabase
+      .from('schedules')
+      .update(updatedSchedule)
+      .eq('id', id)
+      .select();
+    
+    if (error) throw error;
+    
+    await loadSchedules();
+    document.getElementById('modal').classList.remove('active');
+    
+    if (currentSection === 'dashboard') {
+      renderDashboard();
+    } else if (currentSection === 'calendar') {
+      renderCalendar();
+    }
+  } catch (error) {
+    console.error('スケジュール更新エラー:', error);
+    alert('スケジュールの更新に失敗しました');
+  }
+}
+
+async function updateTask(event, id) {
+  event.preventDefault();
+  const formData = new FormData(event.target);
+  const updatedTask = {
+    title: formData.get('title'),
+    department: formData.get('department'),
+    description: formData.get('description'),
+    priority: formData.get('priority'),
+    due_date: formData.get('dueDate'),
+    assigned_by: formData.get('assignedBy')
+  };
+  
+  try {
+    const { data, error } = await supabase
+      .from('tasks')
+      .update(updatedTask)
+      .eq('id', id)
+      .select();
+    
+    if (error) throw error;
+    
+    await loadTasks();
+    document.getElementById('modal').classList.remove('active');
+    
+    if (currentSection === 'tasks') {
+      renderTasks();
+    }
+  } catch (error) {
+    console.error('タスク更新エラー:', error);
+    alert('タスクの更新に失敗しました');
+  }
+}
+
+async function updateHandover(event, id) {
+  event.preventDefault();
+  const formData = new FormData(event.target);
+  const updatedHandover = {
+    department: formData.get('department'),
+    title: formData.get('title'),
+    description: formData.get('description'),
+    priority: formData.get('priority')
+  };
+  
+  try {
+    const { data, error } = await supabase
+      .from('handovers')
+      .update(updatedHandover)
+      .eq('id', id)
+      .select();
+    
+    if (error) throw error;
+    
+    await loadHandovers();
+    document.getElementById('modal').classList.remove('active');
+    
+    if (currentSection === 'handovers') {
+      renderHandovers();
+    }
+  } catch (error) {
+    console.error('申し送り更新エラー:', error);
+    alert('申し送り事項の更新に失敗しました');
+  }
+}
+
+// Delete Functions
+async function deleteSchedule(id) {
+  if (!confirm('このスケジュールを削除しますか？')) return;
+  
+  try {
+    const { error } = await supabase
+      .from('schedules')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+    
+    await loadSchedules();
+    
+    if (currentSection === 'dashboard') {
+      renderDashboard();
+    } else if (currentSection === 'calendar') {
+      renderCalendar();
+    }
+  } catch (error) {
+    console.error('スケジュール削除エラー:', error);
+    alert('スケジュールの削除に失敗しました');
+  }
+}
+
+async function deleteTask(id) {
+  if (!confirm('このタスクを削除しますか？')) return;
+  
+  try {
+    const { error } = await supabase
+      .from('tasks')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+    
+    await loadTasks();
+    
+    if (currentSection === 'tasks') {
+      renderTasks();
+    }
+  } catch (error) {
+    console.error('タスク削除エラー:', error);
+    alert('タスクの削除に失敗しました');
+  }
+}
+
+async function deleteHandover(id) {
+  if (!confirm('この申し送り事項を削除しますか？')) return;
+  
+  try {
+    const { error } = await supabase
+      .from('handovers')
+      .delete()
+      .eq('id', id);
+    
+    if (error) throw error;
+    
+    await loadHandovers();
+    
+    if (currentSection === 'handovers') {
+      renderHandovers();
+    }
+  } catch (error) {
+    console.error('申し送り削除エラー:', error);
+    alert('申し送り事項の削除に失敗しました');
+  }
 }
 
 // Add Functions

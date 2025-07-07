@@ -1239,3 +1239,60 @@ body {
 .dept-prevention { background-color: #F39C12; }
 .dept-emergency { background-color: #27AE60; }
 .dept-machinery { background-color: #9B59B6; }
+
+/* Action Buttons for Items */
+.schedule-actions,
+.task-actions,
+.handover-actions {
+  display: flex;
+  gap: var(--space-8);
+  margin-top: var(--space-8);
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-standard);
+}
+
+.schedule-item:hover .schedule-actions,
+.task-card:hover .task-actions,
+.handover-item:hover .handover-actions {
+  opacity: 1;
+}
+
+.schedule-item {
+  position: relative;
+}
+
+.schedule-actions {
+  position: absolute;
+  top: var(--space-8);
+  right: var(--space-8);
+}
+
+.task-actions {
+  margin-top: var(--space-12);
+  padding-top: var(--space-12);
+  border-top: 1px solid var(--color-card-border);
+}
+
+.handover-actions {
+  margin-left: var(--space-16);
+  align-self: flex-start;
+}
+
+/* Mobile responsiveness for actions */
+@media (max-width: 768px) {
+  .schedule-actions,
+  .task-actions,
+  .handover-actions {
+    opacity: 1; /* Always show on mobile */
+  }
+  
+  .schedule-actions {
+    position: static;
+    margin-top: var(--space-8);
+  }
+  
+  .handover-actions {
+    margin-left: 0;
+    margin-top: var(--space-8);
+  }
+}
