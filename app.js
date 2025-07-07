@@ -64,7 +64,8 @@ async function loadBasicData() {
       {"id": "fire", "name": "警防係", "color": "#E74C3C"},
       {"id": "prevention", "name": "予防係", "color": "#F39C12"},
       {"id": "emergency", "name": "救急・救助係", "color": "#27AE60"},
-      {"id": "machinery", "name": "機械係", "color": "#9B59B6"}
+      {"id": "machinery", "name": "機械係", "color": "#9B59B6"},
+      {"id": "general_affairs", "name": "業務全般", "color": "#6B73FF"}
     ];
     appData.priorities = [
       {"id": "urgent", "name": "緊急", "color": "#DC3545", "level": 4},
