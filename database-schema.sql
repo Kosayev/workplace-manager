@@ -22,6 +22,16 @@ CREATE TABLE IF NOT EXISTS statuses (
     order_index INTEGER NOT NULL DEFAULT 1
 );
 
+-- コメントテーブル
+CREATE TABLE IF NOT EXISTS comments (
+    id SERIAL PRIMARY KEY,
+    item_type VARCHAR(20) NOT NULL, -- 'task' or 'handover'
+    item_id INTEGER NOT NULL,
+    author_name VARCHAR(100) NOT NULL,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- スケジュールテーブル
 CREATE TABLE IF NOT EXISTS schedules (
     id SERIAL PRIMARY KEY,

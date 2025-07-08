@@ -5,8 +5,30 @@ const appData = {
   statuses: [],
   schedules: [],
   handovers: [],
-  tasks: []
+  tasks: [],
+  comments: []
 };
+
+// コメントを読み込む
+async function loadComments() {
+  try {
+    const { data: comments, error } = await supabase
+      .from('comments')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('コメント読み込みエラー:', error);
+      appData.comments = [];
+      return;
+    }
+    
+    appData.comments = comments || [];
+  } catch (error) {
+    console.error('コメント読み込みエラー:', error);
+    appData.comments = [];
+  }
+}
 
 // データベースから基本データを読み込む
 async function loadBasicData() {
@@ -378,8 +400,24 @@ function renderHandoverContent() {
           </select>
         </div>
         <div class="handover-timestamp">${formatDateTime(handover.timestamp)}</div>
+        <div class="handover-comments">
+          ${(() => {
+            const comments = getCommentsForItem('handover', handover.id);
+            if (comments.length === 0) return '<div class="no-comments">コメントはありません</div>';
+            return comments.slice(0, 2).map(comment => `
+              <div class="comment-item">
+                <div class="comment-header">
+                  <span class="comment-author">${comment.author_name}</span>
+                  <span class="comment-time">${formatCommentDate(comment.created_at)}</span>
+                </div>
+                <div class="comment-content">${comment.content}</div>
+              </div>
+            `).join('') + (comments.length > 2 ? `<div class="more-comments">他${comments.length - 2}件のコメント</div>` : '');
+          })()}
+        </div>
       </div>
       <div class="handover-actions">
+        <button class="btn btn--sm btn--outline" onclick="showCommentModal('handover', ${handover.id}, '${handover.title}')">💬</button>
         <button class="btn btn--sm btn--outline" onclick="editHandover(${handover.id})">編集</button>
         <button class="btn btn--sm btn--outline" onclick="deleteHandover(${handover.id})" style="color: #dc3545; border-color: #dc3545;">削除</button>
       </div>
@@ -462,7 +500,23 @@ function renderTasksGrid() {
           ${getDepartmentName(task.department)}
         </div>
       </div>
+      <div class="task-comments">
+        ${(() => {
+          const comments = getCommentsForItem('task', task.id);
+          if (comments.length === 0) return '<div class="no-comments">コメントはありません</div>';
+          return comments.slice(0, 2).map(comment => `
+            <div class="comment-item">
+              <div class="comment-header">
+                <span class="comment-author">${comment.author_name}</span>
+                <span class="comment-time">${formatCommentDate(comment.created_at)}</span>
+              </div>
+              <div class="comment-content">${comment.content}</div>
+            </div>
+          `).join('') + (comments.length > 2 ? `<div class="more-comments">他${comments.length - 2}件のコメント</div>` : '');
+        })()}
+      </div>
       <div class="task-actions">
+        <button class="btn btn--sm btn--outline" onclick="showCommentModal('task', ${task.id}, '${task.title}')">💬</button>
         <button class="btn btn--sm btn--outline" onclick="editTask(${task.id})">編集</button>
         <button class="btn btn--sm btn--outline" onclick="deleteTask(${task.id})" style="color: #dc3545; border-color: #dc3545;">削除</button>
       </div>
@@ -1465,6 +1519,96 @@ async function addTask(event) {
   }
 }
 
+// Comment Functions
+function getCommentsForItem(itemType, itemId) {
+  return appData.comments.filter(c => c.item_type === itemType && c.item_id == itemId);
+}
+
+async function addComment(itemType, itemId, authorName, content) {
+  try {
+    const { data, error } = await supabase
+      .from('comments')
+      .insert([{
+        item_type: itemType,
+        item_id: itemId,
+        author_name: authorName,
+        content: content
+      }])
+      .select();
+    
+    if (error) throw error;
+    
+    await loadComments();
+    
+    // 該当セクションを再描画
+    if (itemType === 'task') {
+      renderTasksGrid();
+    } else if (itemType === 'handover') {
+      renderHandovers();
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('コメント追加エラー:', error);
+    return false;
+  }
+}
+
+function showCommentModal(itemType, itemId, itemTitle) {
+  const content = `
+    <form class="modal-form" onsubmit="submitComment(event, '${itemType}', ${itemId})">
+      <div class="form-group">
+        <label class="form-label">コメント対象</label>
+        <input type="text" class="form-control" value="${itemTitle}" readonly>
+      </div>
+      <div class="form-group">
+        <label class="form-label">担当者名</label>
+        <input type="text" class="form-control" name="authorName" placeholder="担当者名を入力" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">コメント</label>
+        <textarea class="form-control" name="content" rows="4" placeholder="コメントを入力してください" required></textarea>
+      </div>
+      <div class="modal-buttons">
+        <button type="button" class="btn btn--outline" onclick="document.getElementById('modal').classList.remove('active')">キャンセル</button>
+        <button type="submit" class="btn btn--primary">コメント追加</button>
+      </div>
+    </form>
+  `;
+  showModal('コメント追加', content);
+}
+
+async function submitComment(event, itemType, itemId) {
+  event.preventDefault();
+  const formData = new FormData(event.target);
+  const authorName = formData.get('authorName');
+  const content = formData.get('content');
+  
+  const success = await addComment(itemType, itemId, authorName, content);
+  
+  if (success) {
+    document.getElementById('modal').classList.remove('active');
+  } else {
+    alert('コメントの追加に失敗しました');
+  }
+}
+
+function formatCommentDate(dateString) {
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffMs = now - date;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+  
+  if (diffMins < 1) return '今';
+  if (diffMins < 60) return `${diffMins}分前`;
+  if (diffHours < 24) return `${diffHours}時間前`;
+  if (diffDays < 7) return `${diffDays}日前`;
+  
+  return date.toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' });
+}
+
 // Initialize Application
 async function initializeApp() {
   try {
@@ -1473,6 +1617,7 @@ async function initializeApp() {
     await loadSchedules();
     await loadHandovers();
     await loadTasks();
+    await loadComments();
     
     initializeNavigation();
     initializeModal();

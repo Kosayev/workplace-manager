@@ -1376,6 +1376,99 @@ body {
   }
 }
 
+/* Comment Styles */
+.task-comments,
+.handover-comments {
+  margin: var(--space-12) 0;
+  padding: var(--space-8);
+  background-color: var(--color-secondary);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--color-primary);
+}
+
+.no-comments {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-style: italic;
+  text-align: center;
+  padding: var(--space-8);
+}
+
+.comment-item {
+  margin-bottom: var(--space-8);
+  padding: var(--space-6);
+  background-color: var(--color-surface);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-card-border);
+}
+
+.comment-item:last-child {
+  margin-bottom: 0;
+}
+
+.comment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-4);
+}
+
+.comment-author {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-primary);
+  font-size: var(--font-size-sm);
+}
+
+.comment-time {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.comment-content {
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  line-height: 1.4;
+}
+
+.more-comments {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-xs);
+  text-align: center;
+  padding: var(--space-4);
+  font-style: italic;
+}
+
+/* Comment button styling */
+.btn:has-text("💬") {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-btn-primary-text);
+}
+
+@media (max-width: 768px) {
+  .task-comments,
+  .handover-comments {
+    margin: var(--space-8) 0;
+    padding: var(--space-6);
+  }
+  
+  .comment-item {
+    padding: var(--space-4);
+    margin-bottom: var(--space-6);
+  }
+  
+  .comment-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+  
+  .comment-author,
+  .comment-time {
+    font-size: var(--font-size-xs);
+  }
+}
+
 /* Day Schedule Modal Styles */
 .day-schedule-modal {
   max-width: 600px;
