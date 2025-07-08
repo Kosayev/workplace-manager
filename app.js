@@ -338,8 +338,8 @@ function renderScheduleList(containerId, date) {
         </div>
       </div>
       <div class="schedule-actions">
-        <button class="btn btn--sm btn--outline" onclick="editSchedule(${schedule.id})">編集</button>
-        <button class="btn btn--sm btn--outline" onclick="deleteSchedule(${schedule.id})" style="color: #dc3545; border-color: #dc3545;">削除</button>
+        <button class="btn btn--sm btn--outline" onclick="editSchedule(${schedule.id})">${window.iconSystem ? window.iconSystem.Icon('edit', 'sm', 'base') : '編集'}</button>
+        <button class="btn btn--sm btn--outline" onclick="deleteSchedule(${schedule.id})" style="color: #dc3545; border-color: #dc3545;">${window.iconSystem ? window.iconSystem.Icon('trash2', 'sm', 'base') : '削除'}</button>
       </div>
     </div>
   `).join('');
@@ -400,7 +400,7 @@ function renderHandoverContent() {
           </select>
         </div>
         <div class="handover-timestamp">${formatDateTime(handover.timestamp)}</div>
-        <div class="handover-comments">
+        <div class="handover-comments u-comment-pad">
           ${(() => {
             const comments = getCommentsForItem('handover', handover.id);
             if (comments.length === 0) return '<div class="no-comments">コメントはありません</div>';
@@ -417,9 +417,9 @@ function renderHandoverContent() {
         </div>
       </div>
       <div class="handover-actions">
-        <button class="btn btn--sm btn--outline" onclick="showCommentModal('handover', ${handover.id}, '${handover.title}')">💬</button>
-        <button class="btn btn--sm btn--outline" onclick="editHandover(${handover.id})">編集</button>
-        <button class="btn btn--sm btn--outline" onclick="deleteHandover(${handover.id})" style="color: #dc3545; border-color: #dc3545;">削除</button>
+        <button class="btn btn--sm btn--outline" onclick="showCommentModal('handover', ${handover.id}, '${handover.title}')">${window.iconSystem ? window.iconSystem.Icon('messageSquare', 'sm', 'base') : '💬'}</button>
+        <button class="btn btn--sm btn--outline" onclick="editHandover(${handover.id})">${window.iconSystem ? window.iconSystem.Icon('edit', 'sm', 'base') : '編集'}</button>
+        <button class="btn btn--sm btn--outline" onclick="deleteHandover(${handover.id})" style="color: #dc3545; border-color: #dc3545;">${window.iconSystem ? window.iconSystem.Icon('trash2', 'sm', 'base') : '削除'}</button>
       </div>
     </div>
   `).join('');
@@ -500,7 +500,7 @@ function renderTasksGrid() {
           ${getDepartmentName(task.department)}
         </div>
       </div>
-      <div class="task-comments">
+      <div class="task-comments u-comment-pad">
         ${(() => {
           const comments = getCommentsForItem('task', task.id);
           if (comments.length === 0) return '<div class="no-comments">コメントはありません</div>';
@@ -516,9 +516,9 @@ function renderTasksGrid() {
         })()}
       </div>
       <div class="task-actions">
-        <button class="btn btn--sm btn--outline" onclick="showCommentModal('task', ${task.id}, '${task.title}')">💬</button>
-        <button class="btn btn--sm btn--outline" onclick="editTask(${task.id})">編集</button>
-        <button class="btn btn--sm btn--outline" onclick="deleteTask(${task.id})" style="color: #dc3545; border-color: #dc3545;">削除</button>
+        <button class="btn btn--sm btn--outline" onclick="showCommentModal('task', ${task.id}, '${task.title}')">${window.iconSystem ? window.iconSystem.Icon('messageSquare', 'sm', 'base') : '💬'}</button>
+        <button class="btn btn--sm btn--outline" onclick="editTask(${task.id})">${window.iconSystem ? window.iconSystem.Icon('edit', 'sm', 'base') : '編集'}</button>
+        <button class="btn btn--sm btn--outline" onclick="deleteTask(${task.id})" style="color: #dc3545; border-color: #dc3545;">${window.iconSystem ? window.iconSystem.Icon('trash2', 'sm', 'base') : '削除'}</button>
       </div>
     </div>
   `).join('');
@@ -1136,8 +1136,8 @@ async function showDaySchedules(dateStr) {
             </div>
           </div>
           <div class="day-schedule-actions">
-            <button class="btn btn--sm btn--outline" onclick="editScheduleFromDay(${schedule.id})">編集</button>
-            <button class="btn btn--sm btn--outline" onclick="deleteScheduleFromDay(${schedule.id})" style="color: #dc3545; border-color: #dc3545;">削除</button>
+            <button class="btn btn--sm btn--outline" onclick="editScheduleFromDay(${schedule.id})">${window.iconSystem ? window.iconSystem.Icon('edit', 'sm', 'base') : '編集'}</button>
+            <button class="btn btn--sm btn--outline" onclick="deleteScheduleFromDay(${schedule.id})" style="color: #dc3545; border-color: #dc3545;">${window.iconSystem ? window.iconSystem.Icon('trash2', 'sm', 'base') : '削除'}</button>
           </div>
         </div>
       `).join('')
@@ -1636,5 +1636,49 @@ async function initializeApp() {
   }
 }
 
+// Auto-resize textarea functionality
+function autoResizeTextarea() {
+  const textareas = document.querySelectorAll('textarea');
+  textareas.forEach(textarea => {
+    // Reset height to auto to get the correct scrollHeight
+    textarea.style.height = 'auto';
+    // Set height to scrollHeight to fit content
+    textarea.style.height = textarea.scrollHeight + 'px';
+  });
+}
+
+// Initialize textarea auto-resize
+function initializeTextareaAutoResize() {
+  // Add event listener to all existing textareas
+  document.addEventListener('input', (e) => {
+    if (e.target.tagName === 'TEXTAREA') {
+      e.target.style.height = 'auto';
+      e.target.style.height = e.target.scrollHeight + 'px';
+    }
+  });
+  
+  // Auto-resize on page load
+  autoResizeTextarea();
+}
+
+// Initialize sidebar icons
+function initializeSidebarIcons() {
+  if (window.iconSystem) {
+    const dashboardIcon = document.getElementById('dashboard-icon');
+    const handoversIcon = document.getElementById('handovers-icon');
+    const tasksIcon = document.getElementById('tasks-icon');
+    const calendarIcon = document.getElementById('calendar-icon');
+    
+    if (dashboardIcon) dashboardIcon.innerHTML = window.iconSystem.Icon('barChart2', 'md', 'base');
+    if (handoversIcon) handoversIcon.innerHTML = window.iconSystem.Icon('notebookPen', 'md', 'base');
+    if (tasksIcon) tasksIcon.innerHTML = window.iconSystem.Icon('checkSquare', 'md', 'base');
+    if (calendarIcon) calendarIcon.innerHTML = window.iconSystem.Icon('calendar', 'md', 'base');
+  }
+}
+
 // Start the application when DOM is loaded
-document.addEventListener('DOMContentLoaded', initializeApp);
+document.addEventListener('DOMContentLoaded', () => {
+  initializeApp();
+  initializeTextareaAutoResize();
+  initializeSidebarIcons();
+});

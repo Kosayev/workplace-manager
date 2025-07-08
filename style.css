@@ -62,6 +62,7 @@
   --space-0: 0;
   --space-1: 1px;
   --space-2: 2px;
+  --space-3: 3px;
   --space-4: 4px;
   --space-6: 6px;
   --space-8: 8px;
@@ -71,6 +72,15 @@
   --space-20: 20px;
   --space-24: 24px;
   --space-32: 32px;
+
+  /* Icon sizing */
+  --icon-size-xs: 12px;
+  --icon-size-sm: 16px;
+  --icon-size-md: 20px;
+  
+  /* Icon colors */
+  --icon-color-base: var(--color-text);
+  --icon-color-primary: var(--color-primary);
 
   /* Border Radius */
   --radius-sm: 6px;
@@ -1623,12 +1633,7 @@ body {
   font-style: italic;
 }
 
-/* Comment button styling */
-.btn:has-text("💬") {
-  background-color: var(--color-primary);
-  border-color: var(--color-primary);
-  color: var(--color-btn-primary-text);
-}
+/* Comment button styling - replaced with icon system */
 
 @media (max-width: 768px) {
   .task-comments,
@@ -1784,4 +1789,16 @@ body {
   .day-schedule-details {
     margin-right: 0;
   }
+}
+
+/* Utility Classes */
+.u-comment-pad {
+  padding-block: var(--space-3);
+}
+
+/* Textarea styles */
+textarea {
+  margin: 0;
+  font-family: inherit;
+  resize: vertical;
 }

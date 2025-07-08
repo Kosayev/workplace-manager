@@ -15,5 +15,8 @@
     "tasks"
   ],
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "lucide-static": "^0.525.0"
+  }
 }
