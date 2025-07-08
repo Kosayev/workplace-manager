@@ -371,15 +371,11 @@ function renderHandoverContent() {
         <div class="handover-title">${handover.title}</div>
         <div class="handover-description">${handover.description}</div>
         <div class="handover-status-section">
-          <label class="handover-status-label">ステータス:</label>
-          <select class="handover-status-select" onchange="updateHandoverStatus(${handover.id}, this.value)">
+          <select class="handover-status-select" onchange="updateHandoverStatus(${handover.id}, this.value)" style="background-color: ${getStatusColor(handover.status)}; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
             ${getStatusesByCategory('handover').map(status => 
               `<option value="${status.id}" ${status.id === handover.status ? 'selected' : ''}>${status.name}</option>`
             ).join('')}
           </select>
-          <span class="handover-status-badge" style="background-color: ${getStatusColor(handover.status)}">
-            ${getStatusName(handover.status)}
-          </span>
         </div>
         <div class="handover-timestamp">${formatDateTime(handover.timestamp)}</div>
       </div>
@@ -445,15 +441,11 @@ function renderTasksGrid() {
       </div>
       <div class="task-description">${task.description}</div>
       <div class="task-status-section">
-        <label class="task-status-label">ステータス:</label>
-        <select class="task-status-select" onchange="updateTaskStatus(${task.id}, this.value)">
+        <select class="task-status-select" onchange="updateTaskStatus(${task.id}, this.value)" style="background-color: ${getStatusColor(task.status)}; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
           ${getStatusesByCategory('task').map(status => 
             `<option value="${status.id}" ${status.id === task.status ? 'selected' : ''}>${status.name}</option>`
           ).join('')}
         </select>
-        <span class="task-status-badge" style="background-color: ${getStatusColor(task.status)}">
-          ${getStatusName(task.status)}
-        </span>
       </div>
       <div class="task-meta">
         <div>
@@ -478,6 +470,12 @@ async function updateTaskStatus(taskId, newStatus) {
     if (!task) {
       console.error('タスクが見つかりません:', taskId);
       return;
+    }
+
+    // UI要素を即座に更新
+    const selectElement = document.querySelector(`select[onchange="updateTaskStatus(${taskId}, this.value)"]`);
+    if (selectElement) {
+      selectElement.style.backgroundColor = getStatusColor(newStatus);
     }
 
     // データベースでstatusカラムが存在しない場合はcompletedカラムのみ更新
@@ -526,6 +524,12 @@ async function updateHandoverStatus(handoverId, newStatus) {
     if (!handover) {
       console.error('申し送り事項が見つかりません:', handoverId);
       return;
+    }
+
+    // UI要素を即座に更新
+    const selectElement = document.querySelector(`select[onchange="updateHandoverStatus(${handoverId}, this.value)"]`);
+    if (selectElement) {
+      selectElement.style.backgroundColor = getStatusColor(newStatus);
     }
 
     const { data, error } = await supabase
