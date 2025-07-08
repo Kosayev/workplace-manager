@@ -103,10 +103,17 @@
     0 2px 8px rgba(0, 0, 0, 0.04);
     
   /* Glassmorphism Surface Effects */
-  --glass-surface: rgba(255, 255, 255, 0.1);
-  --glass-border: rgba(255, 255, 255, 0.2);
-  --glass-backdrop: blur(20px) saturate(180%);
-  --glass-backdrop-sidebar: blur(16px) saturate(160%);
+  --glass-surface: rgba(255, 255, 255, 0.15);
+  --glass-surface-fallback: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.25);
+  --glass-backdrop: blur(15px) saturate(180%);
+  --glass-backdrop-sidebar: blur(12px) saturate(160%);
+  
+  /* Z-index Management */
+  --z-sidebar: 1000;
+  --z-modal-backdrop: 2000;
+  --z-modal-content: 2001;
+  --z-tooltip: 3000;
   
   /* Advanced Animation Curves */
   --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
@@ -117,6 +124,10 @@
   --duration-fast: 150ms;
   --duration-normal: 250ms;
   --ease-standard: cubic-bezier(0.16, 1, 0.3, 1);
+  
+  /* Accessibility & Motion Preferences */
+  --reduced-motion-duration: 0ms;
+  --reduced-motion-ease: ease;
 
   /* Layout */
   --container-sm: 640px;
@@ -331,7 +342,7 @@ pre code {
   padding: 0;
 }
 
-/* Enhanced Buttons with Ripple Effect */
+/* Enhanced Buttons with Optimized Ripple Effect */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -348,6 +359,15 @@ pre code {
   position: relative;
   overflow: hidden;
   transform: translateY(0);
+  will-change: transform, box-shadow;
+}
+
+/* Fallback for non-supporting browsers */
+@supports not (backdrop-filter: blur(1px)) {
+  .btn--secondary,
+  .btn--outline {
+    background: var(--glass-surface-fallback) !important;
+  }
 }
 
 .btn::before {
@@ -358,15 +378,14 @@ pre code {
   width: 0;
   height: 0;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.3);
-  transform: translate(-50%, -50%);
-  transition: width var(--duration-normal) var(--ease-out-expo), 
-              height var(--duration-normal) var(--ease-out-expo);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform var(--duration-normal) var(--ease-out-expo);
+  pointer-events: none;
 }
 
 .btn:active::before {
-  width: 300px;
-  height: 300px;
+  transform: translate(-50%, -50%) scale(4);
 }
 
 .btn:focus-visible {
@@ -402,7 +421,7 @@ pre code {
 }
 
 .btn--secondary:hover {
-  background: var(--color-secondary-hover);
+  background: rgba(94, 82, 64, 0.3);
   box-shadow: var(--shadow-glass-hover);
   transform: translateY(-2px);
 }
@@ -423,7 +442,7 @@ pre code {
 }
 
 .btn--outline:hover {
-  background: var(--color-secondary);
+  background: rgba(94, 82, 64, 0.25);
   box-shadow: var(--shadow-glass-hover);
   transform: translateY(-2px);
 }
@@ -702,8 +721,37 @@ select.form-control {
 }
 
 :focus-visible {
-  outline: var(--focus-outline);
+  outline: 2px solid var(--color-primary);
   outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Accessibility: Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: var(--reduced-motion-duration) !important;
+    animation-delay: var(--reduced-motion-duration) !important;
+    transition-duration: var(--reduced-motion-duration) !important;
+    transition-delay: var(--reduced-motion-duration) !important;
+  }
+  
+  .btn::before {
+    display: none;
+  }
+  
+  .btn:hover,
+  .task-card:hover,
+  .handover-item:hover,
+  .schedule-card:hover {
+    transform: none !important;
+  }
+  
+  .modal-content {
+    animation: none !important;
+    transform: scale(1) !important;
+  }
 }
 
 /* Dark mode specifics */
@@ -739,8 +787,16 @@ body {
   height: 100vh;
   overflow-y: auto;
   box-shadow: var(--shadow-glass);
-  z-index: 1000;
+  z-index: var(--z-sidebar);
   transition: transform var(--duration-normal) var(--ease-standard);
+  will-change: transform;
+}
+
+/* Fallback for non-supporting browsers */
+@supports not (backdrop-filter: blur(1px)) {
+  .sidebar {
+    background: var(--glass-surface-fallback);
+  }
 }
 
 .sidebar-header {
@@ -857,11 +913,23 @@ body {
   box-shadow: var(--shadow-glass);
   transition: all var(--duration-normal) var(--ease-out-expo);
   transform: translateY(0);
+  will-change: transform, box-shadow;
 }
 
 .schedule-card:hover {
   box-shadow: var(--shadow-glass-hover);
   transform: translateY(-4px);
+}
+
+/* Fallback for non-supporting browsers */
+@supports not (backdrop-filter: blur(1px)) {
+  .schedule-card,
+  .task-card,
+  .handover-item,
+  .tabs,
+  .modal-content {
+    background: var(--glass-surface-fallback);
+  }
 }
 
 .card-header {
@@ -1002,6 +1070,7 @@ body {
   box-shadow: var(--shadow-glass);
   transition: all var(--duration-normal) var(--ease-out-expo);
   transform: translateY(0);
+  will-change: transform, box-shadow;
 }
 
 .handover-item:hover {
@@ -1069,6 +1138,7 @@ body {
   transition: all var(--duration-normal) var(--ease-out-expo);
   transform: translateY(0);
   position: relative;
+  will-change: transform, box-shadow;
 }
 
 .task-card::before {
@@ -1217,7 +1287,7 @@ body {
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.5);
-  z-index: 2000;
+  z-index: var(--z-modal-backdrop);
   align-items: center;
   justify-content: center;
 }
