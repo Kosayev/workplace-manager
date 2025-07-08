@@ -428,6 +428,13 @@ function renderTasksGrid() {
     filteredTasks = filteredTasks.filter(t => t.priority === priorityFilter);
   }
   
+  // 新しいタスクから順に表示（created_atで降順ソート）
+  filteredTasks = filteredTasks.sort((a, b) => {
+    const dateA = new Date(a.created_at || a.createdAt || 0);
+    const dateB = new Date(b.created_at || b.createdAt || 0);
+    return dateB - dateA; // 降順（新しい順）
+  });
+  
   if (filteredTasks.length === 0) {
     container.innerHTML = '<div class="empty-state">タスクがありません</div>';
     return;
