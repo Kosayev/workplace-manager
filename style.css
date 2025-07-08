@@ -79,7 +79,7 @@
   --radius-lg: 12px;
   --radius-full: 9999px;
 
-  /* Shadows */
+  /* Enhanced Glassmorphism Shadows & Effects */
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.02);
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.04),
@@ -88,6 +88,30 @@
     0 4px 6px -2px rgba(0, 0, 0, 0.02);
   --shadow-inset-sm: inset 0 1px 0 rgba(255, 255, 255, 0.15),
     inset 0 -1px 0 rgba(0, 0, 0, 0.03);
+    
+  /* Glassmorphism Multi-layer Shadow System */
+  --shadow-glass: 
+    0 8px 32px rgba(0, 0, 0, 0.12),
+    0 4px 16px rgba(0, 0, 0, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-glass-hover: 
+    0 12px 48px rgba(0, 0, 0, 0.15),
+    0 6px 24px rgba(0, 0, 0, 0.1),
+    0 3px 12px rgba(0, 0, 0, 0.06);
+  --shadow-glass-active: 
+    0 4px 16px rgba(0, 0, 0, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.04);
+    
+  /* Glassmorphism Surface Effects */
+  --glass-surface: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --glass-backdrop: blur(20px) saturate(180%);
+  --glass-backdrop-sidebar: blur(16px) saturate(160%);
+  
+  /* Advanced Animation Curves */
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-elastic: cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
   /* Animation */
   --duration-fast: 150ms;
@@ -307,7 +331,7 @@ pre code {
   padding: 0;
 }
 
-/* Buttons */
+/* Enhanced Buttons with Ripple Effect */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -318,10 +342,31 @@ pre code {
   font-weight: 500;
   line-height: 1.5;
   cursor: pointer;
-  transition: all var(--duration-normal) var(--ease-standard);
+  transition: all var(--duration-normal) var(--ease-out-expo);
   border: none;
   text-decoration: none;
   position: relative;
+  overflow: hidden;
+  transform: translateY(0);
+}
+
+.btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width var(--duration-normal) var(--ease-out-expo), 
+              height var(--duration-normal) var(--ease-out-expo);
+}
+
+.btn:active::before {
+  width: 300px;
+  height: 300px;
 }
 
 .btn:focus-visible {
@@ -332,37 +377,55 @@ pre code {
 .btn--primary {
   background: var(--color-primary);
   color: var(--color-btn-primary-text);
+  box-shadow: var(--shadow-glass);
 }
 
 .btn--primary:hover {
   background: var(--color-primary-hover);
+  box-shadow: var(--shadow-glass-hover);
+  transform: translateY(-2px);
 }
 
 .btn--primary:active {
   background: var(--color-primary-active);
+  box-shadow: var(--shadow-glass-active);
+  transform: translateY(0);
 }
 
 .btn--secondary {
-  background: var(--color-secondary);
+  background: var(--glass-surface);
+  backdrop-filter: var(--glass-backdrop);
+  -webkit-backdrop-filter: var(--glass-backdrop);
+  border: 1px solid var(--glass-border);
   color: var(--color-text);
+  box-shadow: var(--shadow-glass);
 }
 
 .btn--secondary:hover {
   background: var(--color-secondary-hover);
+  box-shadow: var(--shadow-glass-hover);
+  transform: translateY(-2px);
 }
 
 .btn--secondary:active {
   background: var(--color-secondary-active);
+  box-shadow: var(--shadow-glass-active);
+  transform: translateY(0);
 }
 
 .btn--outline {
-  background: transparent;
-  border: 1px solid var(--color-border);
+  background: var(--glass-surface);
+  backdrop-filter: var(--glass-backdrop);
+  -webkit-backdrop-filter: var(--glass-backdrop);
+  border: 1px solid var(--glass-border);
   color: var(--color-text);
+  box-shadow: var(--shadow-glass);
 }
 
 .btn--outline:hover {
   background: var(--color-secondary);
+  box-shadow: var(--shadow-glass-hover);
+  transform: translateY(-2px);
 }
 
 .btn--sm {
@@ -665,14 +728,17 @@ body {
   background-color: var(--color-background);
 }
 
-/* Sidebar Navigation */
+/* Glassmorphism Sidebar Navigation */
 .sidebar {
   width: 280px;
-  background-color: var(--color-surface);
-  border-right: 1px solid var(--color-border);
+  background: var(--glass-surface);
+  backdrop-filter: var(--glass-backdrop-sidebar);
+  -webkit-backdrop-filter: var(--glass-backdrop-sidebar);
+  border-right: 1px solid var(--glass-border);
   position: fixed;
   height: 100vh;
   overflow-y: auto;
+  box-shadow: var(--shadow-glass);
   z-index: 1000;
   transition: transform var(--duration-normal) var(--ease-standard);
 }
@@ -782,11 +848,20 @@ body {
 }
 
 .schedule-card {
-  background-color: var(--color-surface);
+  background: var(--glass-surface);
+  backdrop-filter: var(--glass-backdrop);
+  -webkit-backdrop-filter: var(--glass-backdrop);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
-  border: 1px solid var(--color-card-border);
   overflow: hidden;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-glass);
+  transition: all var(--duration-normal) var(--ease-out-expo);
+  transform: translateY(0);
+}
+
+.schedule-card:hover {
+  box-shadow: var(--shadow-glass-hover);
+  transform: translateY(-4px);
 }
 
 .card-header {
@@ -875,10 +950,13 @@ body {
 
 /* Tabs */
 .tabs {
-  background-color: var(--color-surface);
+  background: var(--glass-surface);
+  backdrop-filter: var(--glass-backdrop);
+  -webkit-backdrop-filter: var(--glass-backdrop);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
-  border: 1px solid var(--color-card-border);
   overflow: hidden;
+  box-shadow: var(--shadow-glass);
 }
 
 .tab-buttons {
@@ -916,13 +994,19 @@ body {
   align-items: flex-start;
   padding: var(--space-16);
   border-radius: var(--radius-base);
-  border: 1px solid var(--color-card-border);
+  background: var(--glass-surface);
+  backdrop-filter: var(--glass-backdrop);
+  -webkit-backdrop-filter: var(--glass-backdrop);
+  border: 1px solid var(--glass-border);
   margin-bottom: var(--space-12);
-  transition: box-shadow var(--duration-fast) var(--ease-standard);
+  box-shadow: var(--shadow-glass);
+  transition: all var(--duration-normal) var(--ease-out-expo);
+  transform: translateY(0);
 }
 
 .handover-item:hover {
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-glass-hover);
+  transform: translateY(-3px);
 }
 
 .handover-priority {
@@ -975,16 +1059,32 @@ body {
 }
 
 .task-card {
-  background-color: var(--color-surface);
+  background: var(--glass-surface);
+  backdrop-filter: var(--glass-backdrop);
+  -webkit-backdrop-filter: var(--glass-backdrop);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
-  border: 1px solid var(--color-card-border);
   padding: var(--space-20);
-  box-shadow: var(--shadow-sm);
-  transition: box-shadow var(--duration-fast) var(--ease-standard);
+  box-shadow: var(--shadow-glass);
+  transition: all var(--duration-normal) var(--ease-out-expo);
+  transform: translateY(0);
+  position: relative;
+}
+
+.task-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-success));
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 
 .task-card:hover {
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-glass-hover);
+  transform: translateY(-6px);
 }
 
 .task-header {
@@ -1127,13 +1227,24 @@ body {
 }
 
 .modal-content {
-  background-color: var(--color-surface);
+  background: var(--glass-surface);
+  backdrop-filter: var(--glass-backdrop);
+  -webkit-backdrop-filter: var(--glass-backdrop);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
   width: 90%;
   max-width: 500px;
   max-height: 80vh;
   overflow-y: auto;
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-glass);
+  transform: scale(0.95);
+  animation: modalEnter var(--duration-normal) var(--ease-out-expo) forwards;
+}
+
+@keyframes modalEnter {
+  to {
+    transform: scale(1);
+  }
 }
 
 .modal-header {
