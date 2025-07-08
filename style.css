@@ -1457,6 +1457,8 @@ body {
 .handover-actions {
   margin-left: var(--space-16);
   align-self: flex-start;
+  flex-direction: column;
+  gap: var(--space-6);
 }
 
 /* Mobile responsiveness for actions */
@@ -1475,6 +1477,8 @@ body {
   .handover-actions {
     margin-left: 0;
     margin-top: var(--space-8);
+    flex-direction: column;
+    gap: var(--space-6);
   }
 }
 
