@@ -1,0 +1,71 @@
+name: Backup Cleanup
+
+on:
+  schedule:
+    # 毎週日曜日の午前4時に実行
+    - cron: '0 4 * * 0'
+  workflow_dispatch: # 手動実行も可能
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Create cleanup timestamp
+        run: echo "CLEANUP_DATE=$(date +%Y%m%d)" >> $GITHUB_ENV
+        
+      - name: Clean old daily backups (keep last 7 days)
+        run: |
+          echo "Cleaning daily backups older than 7 days..."
+          find backups/daily -name "backup-*.md" -mtime +7 -delete || true
+          
+      - name: Clean old monthly backups (keep last 12 months)
+        run: |
+          echo "Cleaning monthly backups older than 12 months..."
+          find backups/monthly -name "backup-*.md" -mtime +365 -delete || true
+          
+      - name: Create cleanup report
+        run: |
+          mkdir -p backups/reports
+          echo "# Backup Cleanup Report - ${{ env.CLEANUP_DATE }}" > backups/reports/cleanup-${{ env.CLEANUP_DATE }}.md
+          echo "" >> backups/reports/cleanup-${{ env.CLEANUP_DATE }}.md
+          echo "## クリーンアップ情報" >> backups/reports/cleanup-${{ env.CLEANUP_DATE }}.md
+          echo "- 実行日時: $(date)" >> backups/reports/cleanup-${{ env.CLEANUP_DATE }}.md
+          echo "- 対象: 古いバックアップファイル" >> backups/reports/cleanup-${{ env.CLEANUP_DATE }}.md
+          echo "" >> backups/reports/cleanup-${{ env.CLEANUP_DATE }}.md
+          echo "## 保持ポリシー" >> backups/reports/cleanup-${{ env.CLEANUP_DATE }}.md
+          echo "- **日次ログ**: 7日間保持" >> backups/reports/cleanup-${{ env.CLEANUP_DATE }}.md
+          echo "- **月次バックアップ**: 12ヶ月間保持" >> backups/reports/cleanup-${{ env.CLEANUP_DATE }}.md
+          echo "- **クリーンアップ報告**: 30日間保持" >> backups/reports/cleanup-${{ env.CLEANUP_DATE }}.md
+          echo "" >> backups/reports/cleanup-${{ env.CLEANUP_DATE }}.md
+          echo "## 現在のファイル状況" >> backups/reports/cleanup-${{ env.CLEANUP_DATE }}.md
+          echo "### 日次バックアップ" >> backups/reports/cleanup-${{ env.CLEANUP_DATE }}.md
+          ls -la backups/daily/ 2>/dev/null | tail -n +2 | wc -l | xargs echo "- ファイル数:" >> backups/reports/cleanup-${{ env.CLEANUP_DATE }}.md
+          echo "" >> backups/reports/cleanup-${{ env.CLEANUP_DATE }}.md
+          echo "### 月次バックアップ" >> backups/reports/cleanup-${{ env.CLEANUP_DATE }}.md
+          ls -la backups/monthly/ 2>/dev/null | tail -n +2 | wc -l | xargs echo "- ファイル数:" >> backups/reports/cleanup-${{ env.CLEANUP_DATE }}.md
+          echo "" >> backups/reports/cleanup-${{ env.CLEANUP_DATE }}.md
+          echo "## 容量管理" >> backups/reports/cleanup-${{ env.CLEANUP_DATE }}.md
+          echo "### バックアップフォルダサイズ" >> backups/reports/cleanup-${{ env.CLEANUP_DATE }}.md
+          du -sh backups/ 2>/dev/null | xargs echo "- 合計サイズ:" >> backups/reports/cleanup-${{ env.CLEANUP_DATE }}.md
+          echo "" >> backups/reports/cleanup-${{ env.CLEANUP_DATE }}.md
+          echo "## 次回クリーンアップ予定" >> backups/reports/cleanup-${{ env.CLEANUP_DATE }}.md
+          echo "次回のクリーンアップは $(date -d '+7 days' '+%Y年%m月%d日') に実行予定です。" >> backups/reports/cleanup-${{ env.CLEANUP_DATE }}.md
+          
+      - name: Clean old cleanup reports (keep last 30 days)
+        run: |
+          find backups/reports -name "cleanup-*.md" -mtime +30 -delete || true
+          
+      - name: Commit cleanup results
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add backups/
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Backup cleanup: ${{ env.CLEANUP_DATE }}"
+            git push
+          fi

@@ -1,0 +1,67 @@
+name: Daily Backup Log
+
+on:
+  schedule:
+    # 毎日午前2時に実行
+    - cron: '0 2 * * *'
+  workflow_dispatch: # 手動実行も可能
+
+jobs:
+  daily-log:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Create backup directory
+        run: mkdir -p backups/daily
+        
+      - name: Create backup timestamp
+        run: echo "BACKUP_DATE=$(date +%Y%m%d)" >> $GITHUB_ENV
+        
+      - name: Create daily backup log
+        run: |
+          echo "# Daily Backup Log - ${{ env.BACKUP_DATE }}" > backups/daily/backup-${{ env.BACKUP_DATE }}.md
+          echo "" >> backups/daily/backup-${{ env.BACKUP_DATE }}.md
+          echo "## システム情報" >> backups/daily/backup-${{ env.BACKUP_DATE }}.md
+          echo "- 日付: $(date)" >> backups/daily/backup-${{ env.BACKUP_DATE }}.md
+          echo "- システム: 職場管理システム" >> backups/daily/backup-${{ env.BACKUP_DATE }}.md
+          echo "- データベース: Supabase PostgreSQL" >> backups/daily/backup-${{ env.BACKUP_DATE }}.md
+          echo "- バックアップ種別: 日次ログ" >> backups/daily/backup-${{ env.BACKUP_DATE }}.md
+          echo "- ステータス: ✅ バックアップリマインダー作成済み" >> backups/daily/backup-${{ env.BACKUP_DATE }}.md
+          echo "" >> backups/daily/backup-${{ env.BACKUP_DATE }}.md
+          echo "## 手動バックアップ手順" >> backups/daily/backup-${{ env.BACKUP_DATE }}.md
+          echo "重要なデータ変更があった場合は、以下の手順で手動バックアップを実行してください：" >> backups/daily/backup-${{ env.BACKUP_DATE }}.md
+          echo "" >> backups/daily/backup-${{ env.BACKUP_DATE }}.md
+          echo "1. **Supabase SQL Editor** にアクセス" >> backups/daily/backup-${{ env.BACKUP_DATE }}.md
+          echo "2. **重要データの確認**:" >> backups/daily/backup-${{ env.BACKUP_DATE }}.md
+          echo "   \`\`\`sql" >> backups/daily/backup-${{ env.BACKUP_DATE }}.md
+          echo "   SELECT COUNT(*) as task_count FROM tasks;" >> backups/daily/backup-${{ env.BACKUP_DATE }}.md
+          echo "   SELECT COUNT(*) as handover_count FROM handovers;" >> backups/daily/backup-${{ env.BACKUP_DATE }}.md
+          echo "   SELECT COUNT(*) as schedule_count FROM schedules;" >> backups/daily/backup-${{ env.BACKUP_DATE }}.md
+          echo "   \`\`\`" >> backups/daily/backup-${{ env.BACKUP_DATE }}.md
+          echo "3. **データエクスポート** (必要に応じて):" >> backups/daily/backup-${{ env.BACKUP_DATE }}.md
+          echo "   \`\`\`sql" >> backups/daily/backup-${{ env.BACKUP_DATE }}.md
+          echo "   SELECT * FROM tasks ORDER BY created_at DESC;" >> backups/daily/backup-${{ env.BACKUP_DATE }}.md
+          echo "   SELECT * FROM handovers ORDER BY created_at DESC;" >> backups/daily/backup-${{ env.BACKUP_DATE }}.md
+          echo "   \`\`\`" >> backups/daily/backup-${{ env.BACKUP_DATE }}.md
+          echo "4. 結果をCSVでダウンロード" >> backups/daily/backup-${{ env.BACKUP_DATE }}.md
+          echo "" >> backups/daily/backup-${{ env.BACKUP_DATE }}.md
+          echo "## 月次完全バックアップ" >> backups/daily/backup-${{ env.BACKUP_DATE }}.md
+          echo "毎月1日には \`backup-script.sql\` を使用した完全バックアップを実行してください。" >> backups/daily/backup-${{ env.BACKUP_DATE }}.md
+          
+      - name: Clean old daily logs (keep last 7 days)
+        run: |
+          find backups/daily -name "backup-*.md" -mtime +7 -delete || true
+          
+      - name: Commit backup log
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add backups/
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Daily backup log: ${{ env.BACKUP_DATE }}"
+            git push
+          fi

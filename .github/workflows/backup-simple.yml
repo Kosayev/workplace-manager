@@ -1,0 +1,52 @@
+name: Simple Daily Backup
+
+on:
+  schedule:
+    # 毎日午前2時に実行
+    - cron: '0 2 * * *'
+  workflow_dispatch: # 手動実行も可能
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      - name: Create backup directory
+        run: mkdir -p backups
+        
+      - name: Create backup timestamp
+        run: echo "BACKUP_DATE=$(date +%Y%m%d)" >> $GITHUB_ENV
+        
+      - name: Create daily backup log
+        run: |
+          echo "# Daily Backup Log - ${{ env.BACKUP_DATE }}" > backups/backup-${{ env.BACKUP_DATE }}.md
+          echo "" >> backups/backup-${{ env.BACKUP_DATE }}.md
+          echo "## Backup Information" >> backups/backup-${{ env.BACKUP_DATE }}.md
+          echo "- Date: $(date)" >> backups/backup-${{ env.BACKUP_DATE }}.md
+          echo "- System: Workplace Manager" >> backups/backup-${{ env.BACKUP_DATE }}.md
+          echo "- Database: Supabase PostgreSQL" >> backups/backup-${{ env.BACKUP_DATE }}.md
+          echo "- Status: ✅ Backup reminder created" >> backups/backup-${{ env.BACKUP_DATE }}.md
+          echo "" >> backups/backup-${{ env.BACKUP_DATE }}.md
+          echo "## Manual Backup Instructions" >> backups/backup-${{ env.BACKUP_DATE }}.md
+          echo "1. Access Supabase SQL Editor" >> backups/backup-${{ env.BACKUP_DATE }}.md
+          echo "2. Run: \`SELECT * FROM tasks; SELECT * FROM handovers; SELECT * FROM schedules;\`" >> backups/backup-${{ env.BACKUP_DATE }}.md
+          echo "3. Export results as CSV" >> backups/backup-${{ env.BACKUP_DATE }}.md
+          echo "4. Save to local backup folder" >> backups/backup-${{ env.BACKUP_DATE }}.md
+          
+      - name: Clean old backups (keep last 7 days only)
+        run: |
+          find backups -name "backup-*.md" -mtime +7 -delete || true
+          
+      - name: Commit backup log
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add backups/
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Daily backup log: ${{ env.BACKUP_DATE }}"
+            git push
+          fi
