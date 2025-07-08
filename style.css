@@ -1381,7 +1381,7 @@ body {
 .handover-comments {
   margin: var(--space-12) 0;
   padding: var(--space-8);
-  background-color: var(--color-secondary);
+  background-color: transparent;
   border-radius: var(--radius-sm);
   border-left: 3px solid var(--color-primary);
 }
