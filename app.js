@@ -1,4 +1,4 @@
-// Import icon system
+// Import icon system - ensure it loads before other functions
 import './src/icons.js';
 
 // Application Data and State
@@ -1666,17 +1666,33 @@ function initializeTextareaAutoResize() {
 
 // Initialize sidebar icons
 function initializeSidebarIcons() {
-  if (window.iconSystem) {
-    const dashboardIcon = document.getElementById('dashboard-icon');
-    const handoversIcon = document.getElementById('handovers-icon');
-    const tasksIcon = document.getElementById('tasks-icon');
-    const calendarIcon = document.getElementById('calendar-icon');
-    
-    if (dashboardIcon) dashboardIcon.innerHTML = window.iconSystem.Icon('barChart2', 'md', 'base');
-    if (handoversIcon) handoversIcon.innerHTML = window.iconSystem.Icon('notebookPen', 'md', 'base');
-    if (tasksIcon) tasksIcon.innerHTML = window.iconSystem.Icon('checkSquare', 'md', 'base');
-    if (calendarIcon) calendarIcon.innerHTML = window.iconSystem.Icon('calendar', 'md', 'base');
+  // Retry mechanism in case iconSystem isn't loaded yet
+  let retryCount = 0;
+  const maxRetries = 10;
+  
+  function tryInitIcons() {
+    if (window.iconSystem && window.iconSystem.Icon) {
+      const dashboardIcon = document.getElementById('dashboard-icon');
+      const handoversIcon = document.getElementById('handovers-icon');
+      const tasksIcon = document.getElementById('tasks-icon');
+      const calendarIcon = document.getElementById('calendar-icon');
+      
+      if (dashboardIcon) dashboardIcon.innerHTML = window.iconSystem.Icon('barChart2', 'md', 'base');
+      if (handoversIcon) handoversIcon.innerHTML = window.iconSystem.Icon('notebookPen', 'md', 'base');
+      if (tasksIcon) tasksIcon.innerHTML = window.iconSystem.Icon('checkSquare', 'md', 'base');
+      if (calendarIcon) calendarIcon.innerHTML = window.iconSystem.Icon('calendar', 'md', 'base');
+      
+      console.log('Sidebar icons initialized successfully');
+    } else if (retryCount < maxRetries) {
+      retryCount++;
+      console.log(`Retrying icon initialization (${retryCount}/${maxRetries})`);
+      setTimeout(tryInitIcons, 100);
+    } else {
+      console.error('Failed to initialize sidebar icons - iconSystem not available');
+    }
   }
+  
+  tryInitIcons();
 }
 
 // Expose functions globally for onclick handlers
@@ -1694,7 +1710,10 @@ window.updateHandoverStatus = updateHandoverStatus;
 
 // Start the application when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-  initializeApp();
-  initializeTextareaAutoResize();
-  initializeSidebarIcons();
+  // Small delay to ensure all modules are loaded
+  setTimeout(() => {
+    initializeApp();
+    initializeTextareaAutoResize();
+    initializeSidebarIcons();
+  }, 50);
 });
