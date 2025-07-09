@@ -1679,6 +1679,19 @@ function initializeSidebarIcons() {
   }
 }
 
+// Expose functions globally for onclick handlers
+window.showCommentModal = showCommentModal;
+window.editSchedule = editSchedule;
+window.deleteSchedule = deleteSchedule;
+window.editHandover = editHandover;
+window.deleteHandover = deleteHandover;
+window.editTask = editTask;
+window.deleteTask = deleteTask;
+window.editScheduleFromDay = editScheduleFromDay;
+window.deleteScheduleFromDay = deleteScheduleFromDay;
+window.updateTaskStatus = updateTaskStatus;
+window.updateHandoverStatus = updateHandoverStatus;
+
 // Start the application when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
   initializeApp();
