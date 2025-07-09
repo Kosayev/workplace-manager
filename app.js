@@ -1949,16 +1949,17 @@ async function viewFile(attachmentId) {
 // 画像表示モーダル
 function showImageModal(fileName, imageUrl) {
   const content = `
-    <div class="file-viewer-modal">
+    <div class="file-viewer-modal image-viewer">
       <div class="file-viewer-header">
         <h3>${fileName}</h3>
         <div class="file-viewer-actions">
+          <button class="btn btn--outline" onclick="toggleImageZoom()">拡大/縮小</button>
           <button class="btn btn--outline" onclick="window.open('${imageUrl}', '_blank')">新しいタブで開く</button>
           <button class="btn btn--outline" onclick="document.getElementById('modal').classList.remove('active')">閉じる</button>
         </div>
       </div>
-      <div class="file-viewer-content">
-        <img src="${imageUrl}" alt="${fileName}" style="max-width: 100%; max-height: 70vh; object-fit: contain;">
+      <div class="file-viewer-content image-content">
+        <img id="modal-image" src="${imageUrl}" alt="${fileName}" style="max-width: 100%; max-height: 75vh; object-fit: contain; cursor: pointer;" onclick="toggleImageZoom()">
       </div>
     </div>
   `;
@@ -1966,24 +1967,70 @@ function showImageModal(fileName, imageUrl) {
   showModal('ファイル表示', content);
 }
 
+// 画像ズーム切り替え機能
+function toggleImageZoom() {
+  const img = document.getElementById('modal-image');
+  if (!img) return;
+  
+  if (img.style.maxWidth === '100%') {
+    // 拡大表示
+    img.style.maxWidth = 'none';
+    img.style.maxHeight = 'none';
+    img.style.width = 'auto';
+    img.style.height = 'auto';
+    img.style.cursor = 'zoom-out';
+  } else {
+    // 縮小表示
+    img.style.maxWidth = '100%';
+    img.style.maxHeight = '75vh';
+    img.style.width = 'auto';
+    img.style.height = 'auto';
+    img.style.cursor = 'zoom-in';
+  }
+}
+
 // PDF表示モーダル
 function showPdfModal(fileName, pdfUrl) {
   const content = `
-    <div class="file-viewer-modal">
+    <div class="file-viewer-modal pdf-viewer">
       <div class="file-viewer-header">
         <h3>${fileName}</h3>
         <div class="file-viewer-actions">
+          <button class="btn btn--outline" onclick="adjustPdfZoom('fit-width')">幅に合わせる</button>
+          <button class="btn btn--outline" onclick="adjustPdfZoom('fit-height')">高さに合わせる</button>
           <button class="btn btn--outline" onclick="window.open('${pdfUrl}', '_blank')">新しいタブで開く</button>
           <button class="btn btn--outline" onclick="document.getElementById('modal').classList.remove('active')">閉じる</button>
         </div>
       </div>
-      <div class="file-viewer-content">
-        <iframe src="${pdfUrl}" style="width: 100%; height: 70vh; border: none;"></iframe>
+      <div class="file-viewer-content pdf-content">
+        <iframe id="pdf-iframe" src="${pdfUrl}#view=FitH&toolbar=0&navpanes=0&scrollbar=0" style="width: 100%; height: 75vh; border: none;"></iframe>
       </div>
     </div>
   `;
   
   showModal('ファイル表示', content);
+}
+
+// PDFズーム調整機能
+function adjustPdfZoom(fitType) {
+  const iframe = document.getElementById('pdf-iframe');
+  if (!iframe) return;
+  
+  const currentSrc = iframe.src.split('#')[0]; // Remove existing parameters
+  
+  switch (fitType) {
+    case 'fit-width':
+      iframe.src = currentSrc + '#view=FitH&toolbar=0&navpanes=0&scrollbar=0';
+      break;
+    case 'fit-height':
+      iframe.src = currentSrc + '#view=FitV&toolbar=0&navpanes=0&scrollbar=0';
+      break;
+    case 'fit-page':
+      iframe.src = currentSrc + '#view=Fit&toolbar=0&navpanes=0&scrollbar=0';
+      break;
+    default:
+      iframe.src = currentSrc + '#view=FitH&toolbar=0&navpanes=0&scrollbar=0';
+  }
 }
 
 // ファイルダウンロード機能
@@ -2176,6 +2223,8 @@ window.showFileUploadModal = showFileUploadModal;
 window.handleFileUpload = handleFileUpload;
 window.viewFile = viewFile;
 window.downloadFile = downloadFile;
+window.toggleImageZoom = toggleImageZoom;
+window.adjustPdfZoom = adjustPdfZoom;
 window.editSchedule = editSchedule;
 window.deleteSchedule = deleteSchedule;
 window.editHandover = editHandover;

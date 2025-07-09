@@ -2150,9 +2150,19 @@ textarea {
 
 /* File Viewer Modal Styles */
 .file-viewer-modal {
-  max-width: 90vw;
-  max-height: 90vh;
+  max-width: 95vw;
+  max-height: 95vh;
+  width: 900px;
+}
+
+.file-viewer-modal.pdf-viewer {
+  width: 1000px;
+  max-width: 95vw;
+}
+
+.file-viewer-modal.image-viewer {
   width: 800px;
+  max-width: 95vw;
 }
 
 .file-viewer-header {
@@ -2185,43 +2195,112 @@ textarea {
   padding: var(--space-20);
   text-align: center;
   background-color: var(--color-surface);
-  max-height: 70vh;
+  max-height: 80vh;
   overflow: auto;
+}
+
+.file-viewer-content.pdf-content {
+  padding: var(--space-12);
+  max-height: 75vh;
+}
+
+.file-viewer-content.image-content {
+  padding: var(--space-16);
+  max-height: 75vh;
 }
 
 .file-viewer-content img {
   box-shadow: var(--shadow-md);
   border-radius: var(--radius-base);
+  transition: all var(--duration-normal) var(--ease-standard);
+}
+
+.file-viewer-content img:hover {
+  box-shadow: var(--shadow-lg);
 }
 
 .file-viewer-content iframe {
   border-radius: var(--radius-base);
   box-shadow: var(--shadow-md);
+  background-color: white;
+}
+
+/* PDF viewer specific styles */
+.pdf-viewer .file-viewer-actions {
+  flex-wrap: wrap;
+  gap: var(--space-6);
+}
+
+.pdf-viewer .file-viewer-actions .btn {
+  font-size: var(--font-size-sm);
+  padding: var(--space-4) var(--space-8);
+}
+
+/* Image viewer specific styles */
+.image-viewer .file-viewer-content {
+  cursor: pointer;
+}
+
+.image-viewer img {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 /* Mobile responsiveness for file viewer */
 @media (max-width: 768px) {
-  .file-viewer-modal {
-    width: 95vw;
-    max-width: 95vw;
+  .file-viewer-modal,
+  .file-viewer-modal.pdf-viewer,
+  .file-viewer-modal.image-viewer {
+    width: 98vw;
+    max-width: 98vw;
+    max-height: 98vh;
   }
   
   .file-viewer-header {
     flex-direction: column;
     gap: var(--space-12);
     align-items: stretch;
+    padding: var(--space-12);
   }
   
   .file-viewer-header h3 {
     margin-right: 0;
     text-align: center;
+    font-size: var(--font-size-base);
   }
   
   .file-viewer-actions {
     justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  .file-viewer-actions .btn {
+    font-size: var(--font-size-xs);
+    padding: var(--space-3) var(--space-6);
   }
   
   .file-viewer-content {
-    padding: var(--space-12);
+    padding: var(--space-8);
+    max-height: 70vh;
+  }
+  
+  .file-viewer-content.pdf-content {
+    padding: var(--space-4);
+    max-height: 70vh;
+  }
+  
+  .file-viewer-content.image-content {
+    padding: var(--space-6);
+    max-height: 70vh;
+  }
+  
+  .file-viewer-content img {
+    max-height: 60vh;
+  }
+  
+  .file-viewer-content iframe {
+    height: 60vh;
   }
 }
