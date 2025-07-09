@@ -32,6 +32,20 @@ CREATE TABLE IF NOT EXISTS comments (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- ファイル添付テーブル
+CREATE TABLE IF NOT EXISTS attachments (
+    id SERIAL PRIMARY KEY,
+    item_type VARCHAR(20) NOT NULL, -- 'task', 'handover', or 'schedule'
+    item_id INTEGER NOT NULL,
+    file_name VARCHAR(255) NOT NULL,
+    file_path VARCHAR(500) NOT NULL,
+    file_size INTEGER NOT NULL,
+    file_type VARCHAR(100) NOT NULL,
+    uploaded_by VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_attachments_item CHECK (item_type IN ('task', 'handover', 'schedule'))
+);
+
 -- スケジュールテーブル
 CREATE TABLE IF NOT EXISTS schedules (
     id SERIAL PRIMARY KEY,

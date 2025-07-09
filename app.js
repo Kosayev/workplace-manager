@@ -8,7 +8,9 @@ const iconSvgs = {
   barChart2: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>`,
   notebookPen: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13.4 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7.4"></path><path d="M2 6h4"></path><path d="M2 10h4"></path><path d="M2 14h4"></path><path d="M2 18h4"></path><path d="M18.4 2.6a2.17 2.17 0 0 1 3 3L16 11l-4 1 1-4 Z"></path></svg>`,
   checkSquare: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,11 12,14 22,4"></polyline><path d="M21,12v7a2,2 0 0,1-2,2H5a2,2 0 0,1-2-2V5a2,2 0 0,1,2-2h11"></path></svg>`,
-  calendar: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>`
+  calendar: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>`,
+  download: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7,10 12,15 17,10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>`,
+  paperclip: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>`
 };
 
 function Icon(name, size = 'sm', color = 'base', className = '') {
@@ -65,7 +67,8 @@ const appData = {
   schedules: [],
   handovers: [],
   tasks: [],
-  comments: []
+  comments: [],
+  attachments: []
 };
 
 // コメントを読み込む
@@ -86,6 +89,27 @@ async function loadComments() {
   } catch (error) {
     console.error('コメント読み込みエラー:', error);
     appData.comments = [];
+  }
+}
+
+// 添付ファイルを読み込む
+async function loadAttachments() {
+  try {
+    const { data: attachments, error } = await supabase
+      .from('attachments')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('添付ファイル読み込みエラー:', error);
+      appData.attachments = [];
+      return;
+    }
+    
+    appData.attachments = attachments || [];
+  } catch (error) {
+    console.error('添付ファイル読み込みエラー:', error);
+    appData.attachments = [];
   }
 }
 
@@ -395,8 +419,41 @@ function renderScheduleList(containerId, date) {
         <div class="schedule-department" style="background-color: ${getDepartmentColor(schedule.department)}">
           ${getDepartmentName(schedule.department)}
         </div>
+        <div class="schedule-attachments">
+          ${(() => {
+            const attachments = getAttachmentsForItem('schedule', schedule.id);
+            if (attachments.length === 0) return '';
+            return `
+              <div class="attachments-section">
+                <div class="attachments-header">
+                  <span class="attachments-title">📎 添付ファイル (${attachments.length})</span>
+                </div>
+                <div class="attachments-list">
+                  ${attachments.slice(0, 2).map(attachment => `
+                    <div class="attachment-item">
+                      <span class="attachment-icon">${getFileIcon(attachment.file_type)}</span>
+                      <div class="attachment-info">
+                        <div class="attachment-name">${attachment.file_name}</div>
+                        <div class="attachment-meta">
+                          <span>${formatFileSize(attachment.file_size)}</span>
+                        </div>
+                      </div>
+                      <div class="attachment-actions">
+                        <button class="btn btn--download" onclick="downloadFile(${attachment.id})" aria-label="ダウンロード">
+                          ${Icon('download', 'xs', 'base')}
+                        </button>
+                      </div>
+                    </div>
+                  `).join('')}
+                  ${attachments.length > 2 ? `<div class="more-attachments">他${attachments.length - 2}件</div>` : ''}
+                </div>
+              </div>
+            `;
+          })()}
+        </div>
       </div>
       <div class="schedule-actions">
+        <button class="btn btn--sm btn--outline" onclick="showFileUploadModal('schedule', ${schedule.id}, '${schedule.title}')">${Icon('paperclip', 'sm', 'base')}</button>
         <button class="btn btn--sm btn--outline" onclick="editSchedule(${schedule.id})">${window.iconSystem ? window.iconSystem.Icon('edit', 'sm', 'base') : '編集'}</button>
         <button class="btn btn--sm btn--outline" onclick="deleteSchedule(${schedule.id})" style="color: #dc3545; border-color: #dc3545;">${window.iconSystem ? window.iconSystem.Icon('trash2', 'sm', 'base') : '削除'}</button>
       </div>
@@ -474,9 +531,30 @@ function renderHandoverContent() {
             `).join('') + (comments.length > 2 ? `<div class="more-comments">他${comments.length - 2}件のコメント</div>` : '');
           })()}
         </div>
+        <div class="handover-attachments">
+          ${(() => {
+            const attachments = getAttachmentsForItem('handover', handover.id);
+            if (attachments.length === 0) return '';
+            return `
+              <div class="attachments-header">📎 添付ファイル (${attachments.length})</div>
+              <div class="attachments-list">
+                ${attachments.slice(0, 3).map(attachment => `
+                  <div class="attachment-item">
+                    <span class="attachment-icon">${getFileIcon(attachment.file_type)}</span>
+                    <span class="attachment-name">${attachment.file_name}</span>
+                    <span class="attachment-size">${formatFileSize(attachment.file_size)}</span>
+                    <button class="btn btn--sm btn--outline" onclick="downloadFile(${attachment.id})">${Icon('download', 'xs', 'base')}</button>
+                  </div>
+                `).join('')}
+                ${attachments.length > 3 ? `<div class="more-attachments">他${attachments.length - 3}件</div>` : ''}
+              </div>
+            `;
+          })()}
+        </div>
       </div>
       <div class="handover-actions">
         <button class="btn btn--sm btn--outline" onclick="showCommentModal('handover', ${handover.id}, '${handover.title}')">${window.iconSystem ? window.iconSystem.Icon('messageSquare', 'sm', 'base') : '💬'}</button>
+        <button class="btn btn--sm btn--outline" onclick="showFileUploadModal('handover', ${handover.id}, '${handover.title}')">${Icon('paperclip', 'sm', 'base')}</button>
         <button class="btn btn--sm btn--outline" onclick="editHandover(${handover.id})">${window.iconSystem ? window.iconSystem.Icon('edit', 'sm', 'base') : '編集'}</button>
         <button class="btn btn--sm btn--outline" onclick="deleteHandover(${handover.id})" style="color: #dc3545; border-color: #dc3545;">${window.iconSystem ? window.iconSystem.Icon('trash2', 'sm', 'base') : '削除'}</button>
       </div>
@@ -574,8 +652,29 @@ function renderTasksGrid() {
           `).join('') + (comments.length > 2 ? `<div class="more-comments">他${comments.length - 2}件のコメント</div>` : '');
         })()}
       </div>
+      <div class="task-attachments">
+        ${(() => {
+          const attachments = getAttachmentsForItem('task', task.id);
+          if (attachments.length === 0) return '';
+          return `
+            <div class="attachments-header">📎 添付ファイル (${attachments.length})</div>
+            <div class="attachments-list">
+              ${attachments.slice(0, 3).map(attachment => `
+                <div class="attachment-item">
+                  <span class="attachment-icon">${getFileIcon(attachment.file_type)}</span>
+                  <span class="attachment-name">${attachment.file_name}</span>
+                  <span class="attachment-size">${formatFileSize(attachment.file_size)}</span>
+                  <button class="btn btn--sm btn--outline" onclick="downloadFile(${attachment.id})">${Icon('download', 'xs', 'base')}</button>
+                </div>
+              `).join('')}
+              ${attachments.length > 3 ? `<div class="more-attachments">他${attachments.length - 3}件</div>` : ''}
+            </div>
+          `;
+        })()}
+      </div>
       <div class="task-actions">
         <button class="btn btn--sm btn--outline" onclick="showCommentModal('task', ${task.id}, '${task.title}')">${window.iconSystem ? window.iconSystem.Icon('messageSquare', 'sm', 'base') : '💬'}</button>
+        <button class="btn btn--sm btn--outline" onclick="showFileUploadModal('task', ${task.id}, '${task.title}')">${Icon('paperclip', 'sm', 'base')}</button>
         <button class="btn btn--sm btn--outline" onclick="editTask(${task.id})">${window.iconSystem ? window.iconSystem.Icon('edit', 'sm', 'base') : '編集'}</button>
         <button class="btn btn--sm btn--outline" onclick="deleteTask(${task.id})" style="color: #dc3545; border-color: #dc3545;">${window.iconSystem ? window.iconSystem.Icon('trash2', 'sm', 'base') : '削除'}</button>
       </div>
@@ -1193,8 +1292,41 @@ async function showDaySchedules(dateStr) {
             <div class="day-schedule-department" style="background-color: ${getDepartmentColor(schedule.department)}">
               ${getDepartmentName(schedule.department)}
             </div>
+            <div class="day-schedule-attachments">
+              ${(() => {
+                const attachments = getAttachmentsForItem('schedule', schedule.id);
+                if (attachments.length === 0) return '';
+                return `
+                  <div class="attachments-section">
+                    <div class="attachments-header">
+                      <span class="attachments-title">📎 添付ファイル (${attachments.length})</span>
+                    </div>
+                    <div class="attachments-list">
+                      ${attachments.slice(0, 3).map(attachment => `
+                        <div class="attachment-item">
+                          <span class="attachment-icon">${getFileIcon(attachment.file_type)}</span>
+                          <div class="attachment-info">
+                            <div class="attachment-name">${attachment.file_name}</div>
+                            <div class="attachment-meta">
+                              <span>${formatFileSize(attachment.file_size)}</span>
+                            </div>
+                          </div>
+                          <div class="attachment-actions">
+                            <button class="btn btn--download" onclick="downloadFile(${attachment.id})" aria-label="ダウンロード">
+                              ${Icon('download', 'xs', 'base')}
+                            </button>
+                          </div>
+                        </div>
+                      `).join('')}
+                      ${attachments.length > 3 ? `<div class="more-attachments">他${attachments.length - 3}件</div>` : ''}
+                    </div>
+                  </div>
+                `;
+              })()}
+            </div>
           </div>
           <div class="day-schedule-actions">
+            <button class="btn btn--sm btn--outline" onclick="showFileUploadModal('schedule', ${schedule.id}, '${schedule.title}')">${Icon('paperclip', 'sm', 'base')}</button>
             <button class="btn btn--sm btn--outline" onclick="editScheduleFromDay(${schedule.id})">${window.iconSystem ? window.iconSystem.Icon('edit', 'sm', 'base') : '編集'}</button>
             <button class="btn btn--sm btn--outline" onclick="deleteScheduleFromDay(${schedule.id})" style="color: #dc3545; border-color: #dc3545;">${window.iconSystem ? window.iconSystem.Icon('trash2', 'sm', 'base') : '削除'}</button>
           </div>
@@ -1583,6 +1715,196 @@ function getCommentsForItem(itemType, itemId) {
   return appData.comments.filter(c => c.item_type === itemType && c.item_id == itemId);
 }
 
+// 添付ファイル関連のヘルパー関数
+function getAttachmentsForItem(itemType, itemId) {
+  return appData.attachments.filter(a => a.item_type === itemType && a.item_id == itemId);
+}
+
+// ファイルサイズを人間が読める形式に変換
+function formatFileSize(bytes) {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// ファイルアイコンを取得
+function getFileIcon(fileType) {
+  if (fileType.includes('image')) return '🖼️';
+  if (fileType.includes('pdf')) return '📄';
+  if (fileType.includes('word')) return '📝';
+  if (fileType.includes('excel')) return '📊';
+  if (fileType.includes('powerpoint')) return '📽️';
+  if (fileType.includes('text')) return '📝';
+  return '📎';
+}
+
+// ファイルアップロード処理
+async function uploadFile(itemType, itemId, file, uploadedBy) {
+  try {
+    // ファイルをSupabase Storageにアップロード
+    const fileName = `${Date.now()}_${file.name}`;
+    const filePath = `${itemType}/${itemId}/${fileName}`;
+    
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('attachments')
+      .upload(filePath, file);
+
+    if (uploadError) throw uploadError;
+
+    // データベースに添付ファイル情報を保存
+    const { data, error } = await supabase
+      .from('attachments')
+      .insert([{
+        item_type: itemType,
+        item_id: itemId,
+        file_name: file.name,
+        file_path: filePath,
+        file_size: file.size,
+        file_type: file.type,
+        uploaded_by: uploadedBy
+      }])
+      .select();
+
+    if (error) throw error;
+
+    // ローカルデータを更新
+    await loadAttachments();
+    
+    return data[0];
+  } catch (error) {
+    console.error('ファイルアップロードエラー:', error);
+    throw error;
+  }
+}
+
+// ファイル削除処理
+async function deleteFile(attachmentId) {
+  try {
+    const attachment = appData.attachments.find(a => a.id === attachmentId);
+    if (!attachment) throw new Error('添付ファイルが見つかりません');
+
+    // Supabase Storageからファイルを削除
+    const { error: storageError } = await supabase.storage
+      .from('attachments')
+      .remove([attachment.file_path]);
+
+    if (storageError) throw storageError;
+
+    // データベースから削除
+    const { error } = await supabase
+      .from('attachments')
+      .delete()
+      .eq('id', attachmentId);
+
+    if (error) throw error;
+
+    // ローカルデータを更新
+    await loadAttachments();
+  } catch (error) {
+    console.error('ファイル削除エラー:', error);
+    throw error;
+  }
+}
+
+// ファイルアップロードモーダルを表示
+function showFileUploadModal(itemType, itemId, title) {
+  const modalTitle = `${title} - ファイル添付`;
+  const content = `
+    <div class="modal-form">
+      <div class="form-group">
+        <label class="form-label">ファイルを選択</label>
+        <input type="file" id="file-input" class="form-control" multiple accept="*/*">
+        <small class="form-text">複数ファイルの選択が可能です（最大10MB/ファイル）</small>
+      </div>
+      <div class="form-group">
+        <label class="form-label">アップロード者</label>
+        <input type="text" id="uploader-name" class="form-control" placeholder="名前を入力" required>
+      </div>
+      <div class="modal-buttons">
+        <button type="button" class="btn btn--outline" onclick="document.getElementById('modal').classList.remove('active')">キャンセル</button>
+        <button class="btn btn--primary" onclick="handleFileUpload('${itemType}', ${itemId})">アップロード</button>
+      </div>
+    </div>
+  `;
+  
+  showModal(modalTitle, content);
+}
+
+// ファイルアップロード処理
+async function handleFileUpload(itemType, itemId) {
+  const fileInput = document.getElementById('file-input');
+  const uploaderName = document.getElementById('uploader-name').value;
+  
+  if (!fileInput.files.length) {
+    alert('ファイルを選択してください');
+    return;
+  }
+  
+  if (!uploaderName.trim()) {
+    alert('アップロード者名を入力してください');
+    return;
+  }
+  
+  try {
+    const uploadPromises = Array.from(fileInput.files).map(file => {
+      if (file.size > 10 * 1024 * 1024) { // 10MB制限
+        throw new Error(`ファイル "${file.name}" は10MBを超えています`);
+      }
+      return uploadFile(itemType, itemId, file, uploaderName);
+    });
+    
+    await Promise.all(uploadPromises);
+    
+    // 該当セクションを再描画
+    if (itemType === 'task') {
+      renderTasksGrid();
+    } else if (itemType === 'handover') {
+      renderHandoverContent();
+    } else if (itemType === 'schedule') {
+      renderDashboard();
+    }
+    
+    document.getElementById('modal').classList.remove('active');
+    alert('ファイルをアップロードしました');
+  } catch (error) {
+    console.error('ファイルアップロードエラー:', error);
+    alert('ファイルのアップロードに失敗しました: ' + error.message);
+  }
+}
+
+// ファイルダウンロード機能
+async function downloadFile(attachmentId) {
+  try {
+    const attachment = appData.attachments.find(a => a.id === attachmentId);
+    if (!attachment) {
+      alert('ファイルが見つかりません');
+      return;
+    }
+    
+    const { data, error } = await supabase.storage
+      .from('attachments')
+      .download(attachment.file_path);
+    
+    if (error) throw error;
+    
+    // ファイルをダウンロード
+    const blob = new Blob([data], { type: attachment.file_type });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = attachment.file_name;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  } catch (error) {
+    console.error('ファイルダウンロードエラー:', error);
+    alert('ファイルのダウンロードに失敗しました');
+  }
+}
+
 async function addComment(itemType, itemId, authorName, content) {
   try {
     const { data, error } = await supabase
@@ -1677,6 +1999,7 @@ async function initializeApp() {
     await loadHandovers();
     await loadTasks();
     await loadComments();
+    await loadAttachments();
     
     initializeNavigation();
     initializeModal();
@@ -1737,6 +2060,9 @@ function initializeSidebarIcons() {
 
 // Expose functions globally for onclick handlers
 window.showCommentModal = showCommentModal;
+window.showFileUploadModal = showFileUploadModal;
+window.handleFileUpload = handleFileUpload;
+window.downloadFile = downloadFile;
 window.editSchedule = editSchedule;
 window.deleteSchedule = deleteSchedule;
 window.editHandover = editHandover;
