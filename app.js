@@ -2007,7 +2007,7 @@ function showPdfModal(fileName, pdfUrl) {
       </div>
       <div class="file-viewer-content pdf-content">
         <div class="pdf-container">
-          <iframe id="pdf-iframe" src="${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0&view=FitH&zoom=page-width" style="width: 100%; height: 75vh; border: none; transform: scale(0.8); transform-origin: top left;"></iframe>
+          <iframe id="pdf-iframe" src="${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0&view=FitH&zoom=page-width" style="width: 100%; height: 100%; border: none; transform: scale(0.85); transform-origin: top left;"></iframe>
         </div>
       </div>
     </div>
@@ -2028,7 +2028,9 @@ function resetPdfZoom() {
   
   const currentSrc = iframe.src.split('#')[0];
   iframe.src = currentSrc + '#toolbar=0&navpanes=0&scrollbar=0&view=FitH&zoom=page-width';
-  iframe.style.transform = 'scale(0.8)';
+  iframe.style.width = '100%';
+  iframe.style.height = '100%';
+  iframe.style.transform = 'scale(0.85)';
   iframe.style.transformOrigin = 'top left';
   
   // 親コンテナのスクロールをリセット
