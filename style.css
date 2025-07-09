@@ -2147,3 +2147,81 @@ textarea {
   color: var(--color-text-secondary);
   margin-left: var(--space-4);
 }
+
+/* File Viewer Modal Styles */
+.file-viewer-modal {
+  max-width: 90vw;
+  max-height: 90vh;
+  width: 800px;
+}
+
+.file-viewer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-16) var(--space-20);
+  border-bottom: 1px solid var(--color-card-border);
+  background-color: var(--color-surface);
+}
+
+.file-viewer-header h3 {
+  margin: 0;
+  color: var(--color-text);
+  font-size: var(--font-size-lg);
+  flex: 1;
+  margin-right: var(--space-16);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-viewer-actions {
+  display: flex;
+  gap: var(--space-8);
+  flex-shrink: 0;
+}
+
+.file-viewer-content {
+  padding: var(--space-20);
+  text-align: center;
+  background-color: var(--color-surface);
+  max-height: 70vh;
+  overflow: auto;
+}
+
+.file-viewer-content img {
+  box-shadow: var(--shadow-md);
+  border-radius: var(--radius-base);
+}
+
+.file-viewer-content iframe {
+  border-radius: var(--radius-base);
+  box-shadow: var(--shadow-md);
+}
+
+/* Mobile responsiveness for file viewer */
+@media (max-width: 768px) {
+  .file-viewer-modal {
+    width: 95vw;
+    max-width: 95vw;
+  }
+  
+  .file-viewer-header {
+    flex-direction: column;
+    gap: var(--space-12);
+    align-items: stretch;
+  }
+  
+  .file-viewer-header h3 {
+    margin-right: 0;
+    text-align: center;
+  }
+  
+  .file-viewer-actions {
+    justify-content: center;
+  }
+  
+  .file-viewer-content {
+    padding: var(--space-12);
+  }
+}

@@ -1919,12 +1919,71 @@ async function viewFile(attachmentId) {
     
     if (error) throw error;
     
-    // 新しいタブで開く
-    window.open(data.signedUrl, '_blank');
+    // ファイル形式によって表示方法を変更
+    const fileType = attachment.file_type.toLowerCase();
+    
+    if (fileType.includes('image')) {
+      // 画像の場合はモーダルで表示
+      showImageModal(attachment.file_name, data.signedUrl);
+    } else if (fileType.includes('pdf')) {
+      // PDFの場合はモーダルで表示
+      showPdfModal(attachment.file_name, data.signedUrl);
+    } else {
+      // その他のファイルは新しいタブで開く（フォールバック付き）
+      const newWindow = window.open(data.signedUrl, '_blank');
+      
+      // ポップアップがブロックされた場合のフォールバック
+      if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
+        const confirmOpen = confirm('ポップアップがブロックされています。同じタブでファイルを開きますか？\n（戻るボタンで元のページに戻れます）');
+        if (confirmOpen) {
+          window.location.href = data.signedUrl;
+        }
+      }
+    }
   } catch (error) {
     console.error('ファイル表示エラー:', error);
     alert('ファイルの表示に失敗しました');
   }
+}
+
+// 画像表示モーダル
+function showImageModal(fileName, imageUrl) {
+  const content = `
+    <div class="file-viewer-modal">
+      <div class="file-viewer-header">
+        <h3>${fileName}</h3>
+        <div class="file-viewer-actions">
+          <button class="btn btn--outline" onclick="window.open('${imageUrl}', '_blank')">新しいタブで開く</button>
+          <button class="btn btn--outline" onclick="document.getElementById('modal').classList.remove('active')">閉じる</button>
+        </div>
+      </div>
+      <div class="file-viewer-content">
+        <img src="${imageUrl}" alt="${fileName}" style="max-width: 100%; max-height: 70vh; object-fit: contain;">
+      </div>
+    </div>
+  `;
+  
+  showModal('ファイル表示', content);
+}
+
+// PDF表示モーダル
+function showPdfModal(fileName, pdfUrl) {
+  const content = `
+    <div class="file-viewer-modal">
+      <div class="file-viewer-header">
+        <h3>${fileName}</h3>
+        <div class="file-viewer-actions">
+          <button class="btn btn--outline" onclick="window.open('${pdfUrl}', '_blank')">新しいタブで開く</button>
+          <button class="btn btn--outline" onclick="document.getElementById('modal').classList.remove('active')">閉じる</button>
+        </div>
+      </div>
+      <div class="file-viewer-content">
+        <iframe src="${pdfUrl}" style="width: 100%; height: 70vh; border: none;"></iframe>
+      </div>
+    </div>
+  `;
+  
+  showModal('ファイル表示', content);
 }
 
 // ファイルダウンロード機能
