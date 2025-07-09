@@ -1740,47 +1740,9 @@ function getFileIcon(fileType) {
   return '📎';
 }
 
-// Supabase Storageのattachmentsバケットを確認・作成
-async function ensureAttachmentsBucket() {
-  try {
-    // バケットの存在確認
-    const { data: buckets, error: listError } = await supabase.storage.listBuckets();
-    
-    if (listError) {
-      console.error('バケット一覧取得エラー:', listError);
-      return;
-    }
-    
-    // attachmentsバケットが存在するかチェック
-    const attachmentsBucket = buckets.find(bucket => bucket.name === 'attachments');
-    
-    if (!attachmentsBucket) {
-      // バケットが存在しない場合は作成
-      const { data: createData, error: createError } = await supabase.storage.createBucket('attachments', {
-        public: false,
-        fileSizeLimit: 10485760, // 10MB
-        allowedMimeTypes: ['*']
-      });
-      
-      if (createError) {
-        console.error('バケット作成エラー:', createError);
-        throw new Error('ファイルストレージの準備に失敗しました');
-      }
-      
-      console.log('attachmentsバケットを作成しました');
-    }
-  } catch (error) {
-    console.error('バケット確認・作成エラー:', error);
-    throw error;
-  }
-}
-
 // ファイルアップロード処理
 async function uploadFile(itemType, itemId, file, uploadedBy) {
   try {
-    // バケットの存在確認と作成
-    await ensureAttachmentsBucket();
-    
     // ファイルをSupabase Storageにアップロード
     const fileName = `${Date.now()}_${file.name}`;
     const filePath = `${itemType}/${itemId}/${fileName}`;
@@ -1886,9 +1848,6 @@ async function handleFileUpload(itemType, itemId) {
   }
   
   try {
-    // バケットの存在確認
-    await ensureAttachmentsBucket();
-    
     const uploadPromises = Array.from(fileInput.files).map(file => {
       if (file.size > 10 * 1024 * 1024) { // 10MB制限
         throw new Error(`ファイル "${file.name}" は10MBを超えています`);
@@ -1911,19 +1870,7 @@ async function handleFileUpload(itemType, itemId) {
     alert('ファイルをアップロードしました');
   } catch (error) {
     console.error('ファイルアップロードエラー:', error);
-    let errorMessage = 'ファイルのアップロードに失敗しました';
-    
-    if (error.message.includes('Bucket not found')) {
-      errorMessage = 'ファイルストレージが見つかりません。管理者に連絡してください。';
-    } else if (error.message.includes('Unable to process file')) {
-      errorMessage = 'ファイルの処理に失敗しました。ファイル形式を確認してください。';
-    } else if (error.message.includes('File size')) {
-      errorMessage = 'ファイルサイズが大きすぎます（10MB以下にしてください）。';
-    } else if (error.message) {
-      errorMessage += ': ' + error.message;
-    }
-    
-    alert(errorMessage);
+    alert('ファイルのアップロードに失敗しました: ' + error.message);
   }
 }
 
@@ -2046,9 +1993,6 @@ function formatCommentDate(dateString) {
 // Initialize Application
 async function initializeApp() {
   try {
-    // Supabase Storageのバケットを確認・作成
-    await ensureAttachmentsBucket();
-    
     // データベースからデータを読み込み
     await loadBasicData();
     await loadSchedules();
