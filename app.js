@@ -1,3 +1,6 @@
+// Import icon system
+import './src/icons.js';
+
 // Application Data and State
 const appData = {
   departments: [],
