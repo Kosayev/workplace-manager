@@ -10,7 +10,8 @@ const iconSvgs = {
   checkSquare: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,11 12,14 22,4"></polyline><path d="M21,12v7a2,2 0 0,1-2,2H5a2,2 0 0,1-2-2V5a2,2 0 0,1,2-2h11"></path></svg>`,
   calendar: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>`,
   download: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7,10 12,15 17,10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>`,
-  paperclip: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>`
+  paperclip: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>`,
+  eye: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`
 };
 
 function Icon(name, size = 'sm', color = 'base', className = '') {
@@ -439,6 +440,9 @@ function renderScheduleList(containerId, date) {
                         </div>
                       </div>
                       <div class="attachment-actions">
+                        <button class="btn btn--view" onclick="viewFile(${attachment.id})" aria-label="表示">
+                          ${Icon('eye', 'xs', 'base')}
+                        </button>
                         <button class="btn btn--download" onclick="downloadFile(${attachment.id})" aria-label="ダウンロード">
                           ${Icon('download', 'xs', 'base')}
                         </button>
@@ -541,9 +545,20 @@ function renderHandoverContent() {
                 ${attachments.slice(0, 3).map(attachment => `
                   <div class="attachment-item">
                     <span class="attachment-icon">${getFileIcon(attachment.file_type)}</span>
-                    <span class="attachment-name">${attachment.file_name}</span>
-                    <span class="attachment-size">${formatFileSize(attachment.file_size)}</span>
-                    <button class="btn btn--sm btn--outline" onclick="downloadFile(${attachment.id})">${Icon('download', 'xs', 'base')}</button>
+                    <div class="attachment-info">
+                      <div class="attachment-name">${attachment.file_name}</div>
+                      <div class="attachment-meta">
+                        <span>${formatFileSize(attachment.file_size)}</span>
+                      </div>
+                    </div>
+                    <div class="attachment-actions">
+                      <button class="btn btn--view" onclick="viewFile(${attachment.id})" aria-label="表示">
+                        ${Icon('eye', 'xs', 'base')}
+                      </button>
+                      <button class="btn btn--download" onclick="downloadFile(${attachment.id})" aria-label="ダウンロード">
+                        ${Icon('download', 'xs', 'base')}
+                      </button>
+                    </div>
                   </div>
                 `).join('')}
                 ${attachments.length > 3 ? `<div class="more-attachments">他${attachments.length - 3}件</div>` : ''}
@@ -662,9 +677,20 @@ function renderTasksGrid() {
               ${attachments.slice(0, 3).map(attachment => `
                 <div class="attachment-item">
                   <span class="attachment-icon">${getFileIcon(attachment.file_type)}</span>
-                  <span class="attachment-name">${attachment.file_name}</span>
-                  <span class="attachment-size">${formatFileSize(attachment.file_size)}</span>
-                  <button class="btn btn--sm btn--outline" onclick="downloadFile(${attachment.id})">${Icon('download', 'xs', 'base')}</button>
+                  <div class="attachment-info">
+                    <div class="attachment-name">${attachment.file_name}</div>
+                    <div class="attachment-meta">
+                      <span>${formatFileSize(attachment.file_size)}</span>
+                    </div>
+                  </div>
+                  <div class="attachment-actions">
+                    <button class="btn btn--view" onclick="viewFile(${attachment.id})" aria-label="表示">
+                      ${Icon('eye', 'xs', 'base')}
+                    </button>
+                    <button class="btn btn--download" onclick="downloadFile(${attachment.id})" aria-label="ダウンロード">
+                      ${Icon('download', 'xs', 'base')}
+                    </button>
+                  </div>
                 </div>
               `).join('')}
               ${attachments.length > 3 ? `<div class="more-attachments">他${attachments.length - 3}件</div>` : ''}
@@ -1312,6 +1338,9 @@ async function showDaySchedules(dateStr) {
                             </div>
                           </div>
                           <div class="attachment-actions">
+                            <button class="btn btn--view" onclick="viewFile(${attachment.id})" aria-label="表示">
+                              ${Icon('eye', 'xs', 'base')}
+                            </button>
                             <button class="btn btn--download" onclick="downloadFile(${attachment.id})" aria-label="ダウンロード">
                               ${Icon('download', 'xs', 'base')}
                             </button>
@@ -1874,6 +1903,30 @@ async function handleFileUpload(itemType, itemId) {
   }
 }
 
+// ファイル表示・ダウンロード機能
+async function viewFile(attachmentId) {
+  try {
+    const attachment = appData.attachments.find(a => a.id === attachmentId);
+    if (!attachment) {
+      alert('ファイルが見つかりません');
+      return;
+    }
+    
+    // 公開URLを取得
+    const { data, error } = await supabase.storage
+      .from('attachments')
+      .createSignedUrl(attachment.file_path, 3600); // 1時間有効
+    
+    if (error) throw error;
+    
+    // 新しいタブで開く
+    window.open(data.signedUrl, '_blank');
+  } catch (error) {
+    console.error('ファイル表示エラー:', error);
+    alert('ファイルの表示に失敗しました');
+  }
+}
+
 // ファイルダウンロード機能
 async function downloadFile(attachmentId) {
   try {
@@ -2062,6 +2115,7 @@ function initializeSidebarIcons() {
 window.showCommentModal = showCommentModal;
 window.showFileUploadModal = showFileUploadModal;
 window.handleFileUpload = handleFileUpload;
+window.viewFile = viewFile;
 window.downloadFile = downloadFile;
 window.editSchedule = editSchedule;
 window.deleteSchedule = deleteSchedule;

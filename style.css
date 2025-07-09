@@ -1892,6 +1892,10 @@ textarea {
   background-color: var(--color-secondary);
 }
 
+.attachment-actions .btn--view {
+  color: var(--color-info);
+}
+
 .attachment-actions .btn--download {
   color: var(--color-primary);
 }
@@ -2104,6 +2108,7 @@ textarea {
 
 /* Accessibility improvements */
 .btn--upload:focus,
+.btn--view:focus,
 .btn--download:focus,
 .btn--delete:focus {
   outline: var(--focus-outline);
