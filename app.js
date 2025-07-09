@@ -1997,18 +1997,46 @@ function showPdfModal(fileName, pdfUrl) {
         <h3>${fileName}</h3>
         <div class="file-viewer-actions">
           <button class="btn btn--outline" onclick="adjustPdfZoom('fit-width')">幅に合わせる</button>
-          <button class="btn btn--outline" onclick="adjustPdfZoom('fit-height')">高さに合わせる</button>
+          <button class="btn btn--outline" onclick="adjustPdfZoom('fit-page')">ページに合わせる</button>
+          <button class="btn btn--outline" onclick="adjustPdfZoom('zoom-in')">拡大</button>
+          <button class="btn btn--outline" onclick="adjustPdfZoom('zoom-out')">縮小</button>
+          <button class="btn btn--outline" onclick="resetPdfZoom()">リセット</button>
           <button class="btn btn--outline" onclick="window.open('${pdfUrl}', '_blank')">新しいタブで開く</button>
           <button class="btn btn--outline" onclick="document.getElementById('modal').classList.remove('active')">閉じる</button>
         </div>
       </div>
       <div class="file-viewer-content pdf-content">
-        <iframe id="pdf-iframe" src="${pdfUrl}#view=FitH&toolbar=0&navpanes=0&scrollbar=0" style="width: 100%; height: 75vh; border: none;"></iframe>
+        <div class="pdf-container">
+          <iframe id="pdf-iframe" src="${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0&view=FitH&zoom=page-width" style="width: 100%; height: 75vh; border: none; transform: scale(0.8); transform-origin: top left;"></iframe>
+        </div>
       </div>
     </div>
   `;
   
   showModal('ファイル表示', content);
+  
+  // モーダルが表示された後にPDFを調整
+  setTimeout(() => {
+    adjustPdfZoom('fit-width');
+  }, 500);
+}
+
+// PDFズームリセット機能
+function resetPdfZoom() {
+  const iframe = document.getElementById('pdf-iframe');
+  if (!iframe) return;
+  
+  const currentSrc = iframe.src.split('#')[0];
+  iframe.src = currentSrc + '#toolbar=0&navpanes=0&scrollbar=0&view=FitH&zoom=page-width';
+  iframe.style.transform = 'scale(0.8)';
+  iframe.style.transformOrigin = 'top left';
+  
+  // 親コンテナのスクロールをリセット
+  const content = iframe.closest('.file-viewer-content');
+  if (content) {
+    content.scrollTop = 0;
+    content.scrollLeft = 0;
+  }
 }
 
 // PDFズーム調整機能
@@ -2017,19 +2045,40 @@ function adjustPdfZoom(fitType) {
   if (!iframe) return;
   
   const currentSrc = iframe.src.split('#')[0]; // Remove existing parameters
+  let currentScale = parseFloat(iframe.style.transform.match(/scale\(([^)]+)\)/)?.[1] || 1);
   
   switch (fitType) {
     case 'fit-width':
-      iframe.src = currentSrc + '#view=FitH&toolbar=0&navpanes=0&scrollbar=0';
-      break;
-    case 'fit-height':
-      iframe.src = currentSrc + '#view=FitV&toolbar=0&navpanes=0&scrollbar=0';
+      iframe.src = currentSrc + '#view=FitH&toolbar=0&navpanes=0&scrollbar=0&zoom=page-width';
+      iframe.style.transform = 'scale(0.8)';
+      iframe.style.transformOrigin = 'top left';
       break;
     case 'fit-page':
-      iframe.src = currentSrc + '#view=Fit&toolbar=0&navpanes=0&scrollbar=0';
+      iframe.src = currentSrc + '#view=Fit&toolbar=0&navpanes=0&scrollbar=0&zoom=page-fit';
+      iframe.style.transform = 'scale(0.7)';
+      iframe.style.transformOrigin = 'top left';
+      break;
+    case 'zoom-in':
+      currentScale = Math.min(currentScale + 0.2, 2.0);
+      iframe.style.transform = `scale(${currentScale})`;
+      iframe.style.transformOrigin = 'top left';
+      break;
+    case 'zoom-out':
+      currentScale = Math.max(currentScale - 0.2, 0.3);
+      iframe.style.transform = `scale(${currentScale})`;
+      iframe.style.transformOrigin = 'top left';
       break;
     default:
-      iframe.src = currentSrc + '#view=FitH&toolbar=0&navpanes=0&scrollbar=0';
+      iframe.src = currentSrc + '#view=FitH&toolbar=0&navpanes=0&scrollbar=0&zoom=page-width';
+      iframe.style.transform = 'scale(0.8)';
+      iframe.style.transformOrigin = 'top left';
+  }
+  
+  // 親コンテナのスクロールをリセット
+  const content = iframe.closest('.file-viewer-content');
+  if (content) {
+    content.scrollTop = 0;
+    content.scrollLeft = 0;
   }
 }
 
@@ -2225,6 +2274,7 @@ window.viewFile = viewFile;
 window.downloadFile = downloadFile;
 window.toggleImageZoom = toggleImageZoom;
 window.adjustPdfZoom = adjustPdfZoom;
+window.resetPdfZoom = resetPdfZoom;
 window.editSchedule = editSchedule;
 window.deleteSchedule = deleteSchedule;
 window.editHandover = editHandover;
