@@ -446,6 +446,9 @@ function renderScheduleList(containerId, date) {
                         <button class="btn btn--download" onclick="downloadFile(${attachment.id})" aria-label="ダウンロード">
                           ${Icon('download', 'xs', 'base')}
                         </button>
+                        <button class="btn btn--delete" onclick="deleteAttachment(${attachment.id})" aria-label="削除">
+                          ${Icon('trash2', 'xs', 'danger')}
+                        </button>
                       </div>
                     </div>
                   `).join('')}
@@ -557,6 +560,9 @@ function renderHandoverContent() {
                       </button>
                       <button class="btn btn--download" onclick="downloadFile(${attachment.id})" aria-label="ダウンロード">
                         ${Icon('download', 'xs', 'base')}
+                      </button>
+                      <button class="btn btn--delete" onclick="deleteAttachment(${attachment.id})" aria-label="削除">
+                        ${Icon('trash2', 'xs', 'danger')}
                       </button>
                     </div>
                   </div>
@@ -689,6 +695,9 @@ function renderTasksGrid() {
                     </button>
                     <button class="btn btn--download" onclick="downloadFile(${attachment.id})" aria-label="ダウンロード">
                       ${Icon('download', 'xs', 'base')}
+                    </button>
+                    <button class="btn btn--delete" onclick="deleteAttachment(${attachment.id})" aria-label="削除">
+                      ${Icon('trash2', 'xs', 'danger')}
                     </button>
                   </div>
                 </div>
@@ -1343,6 +1352,9 @@ async function showDaySchedules(dateStr) {
                             </button>
                             <button class="btn btn--download" onclick="downloadFile(${attachment.id})" aria-label="ダウンロード">
                               ${Icon('download', 'xs', 'base')}
+                            </button>
+                            <button class="btn btn--delete" onclick="deleteAttachment(${attachment.id})" aria-label="削除">
+                              ${Icon('trash2', 'xs', 'danger')}
                             </button>
                           </div>
                         </div>
@@ -2041,6 +2053,52 @@ async function downloadFile(attachmentId) {
   }
 }
 
+// 添付ファイル削除処理（確認付き）
+async function deleteAttachment(attachmentId) {
+  try {
+    const attachment = appData.attachments.find(a => a.id === attachmentId);
+    if (!attachment) {
+      alert('添付ファイルが見つかりません');
+      return;
+    }
+    
+    // 削除確認
+    const confirmed = confirm(`ファイル「${attachment.file_name}」を削除してもよろしいですか？\nこの操作は取り消せません。`);
+    if (!confirmed) return;
+    
+    // Supabase Storageからファイルを削除
+    const { error: storageError } = await supabase.storage
+      .from('attachments')
+      .remove([attachment.file_path]);
+    if (storageError) throw storageError;
+    
+    // データベースから削除
+    const { error } = await supabase
+      .from('attachments')
+      .delete()
+      .eq('id', attachmentId);
+    if (error) throw error;
+    
+    // ローカルデータを更新
+    appData.attachments = appData.attachments.filter(a => a.id !== attachmentId);
+    
+    // 画面を更新
+    const currentPage = document.querySelector('.container.active').id;
+    if (currentPage === 'dashboard') {
+      renderDashboard();
+    } else if (currentPage === 'handovers') {
+      renderHandoverContent();
+    } else if (currentPage === 'tasks') {
+      renderTasksGrid();
+    }
+    
+    alert('ファイルを削除しました');
+  } catch (error) {
+    console.error('ファイル削除エラー:', error);
+    alert('ファイルの削除に失敗しました: ' + error.message);
+  }
+}
+
 async function addComment(itemType, itemId, authorName, content) {
   try {
     const { data, error } = await supabase
@@ -2200,6 +2258,7 @@ window.showFileUploadModal = showFileUploadModal;
 window.handleFileUpload = handleFileUpload;
 window.viewFile = viewFile;
 window.downloadFile = downloadFile;
+window.deleteAttachment = deleteAttachment;
 window.toggleImageZoom = toggleImageZoom;
 // PDF機能のwindow割り当ては削除済み
 window.editSchedule = editSchedule;
