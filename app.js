@@ -2083,12 +2083,20 @@ async function deleteAttachment(attachmentId) {
     appData.attachments = appData.attachments.filter(a => a.id !== attachmentId);
     
     // 画面を更新
-    const currentPage = document.querySelector('.container.active').id;
-    if (currentPage === 'dashboard') {
+    const activeContainer = document.querySelector('.container.active');
+    if (activeContainer) {
+      const currentPage = activeContainer.id;
+      if (currentPage === 'dashboard') {
+        renderDashboard();
+      } else if (currentPage === 'handovers') {
+        renderHandoverContent();
+      } else if (currentPage === 'tasks') {
+        renderTasksGrid();
+      }
+    } else {
+      // フォールバック: 全画面を更新
       renderDashboard();
-    } else if (currentPage === 'handovers') {
       renderHandoverContent();
-    } else if (currentPage === 'tasks') {
       renderTasksGrid();
     }
     
