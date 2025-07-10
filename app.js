@@ -1912,6 +1912,23 @@ async function viewFile(attachmentId) {
       return;
     }
     
+    // ファイル形式によって表示方法を変更
+    const fileType = attachment.file_type.toLowerCase();
+    
+    // PDFの場合は先にタブを開く（ユーザー操作と同期）
+    let placeholderTab = null;
+    if (fileType.includes('pdf')) {
+      placeholderTab = window.open('about:blank', '_blank');
+      if (!placeholderTab) {
+        const userConfirmed = confirm('ポップアップがブロックされています。このタブでファイルを開きますか？');
+        if (userConfirmed) {
+          // 同期的に同じタブで開く
+          window.location.href = `/storage/v1/object/public/attachments/${attachment.file_path}`;
+        }
+        return;
+      }
+    }
+    
     // 公開URLを取得
     const { data, error } = await supabase.storage
       .from('attachments')
@@ -1919,15 +1936,15 @@ async function viewFile(attachmentId) {
     
     if (error) throw error;
     
-    // ファイル形式によって表示方法を変更
-    const fileType = attachment.file_type.toLowerCase();
-    
     if (fileType.includes('image')) {
       // 画像の場合はモーダルで表示
       showImageModal(attachment.file_name, data.signedUrl);
     } else if (fileType.includes('pdf')) {
-      // PDFの場合はモーダルで表示
-      showPdfModal(attachment.file_name, data.signedUrl);
+      // PDFの場合は既に開いたタブにURLを設定
+      if (placeholderTab && !placeholderTab.closed) {
+        placeholderTab.location.href = data.signedUrl;
+      }
+      return;
     } else {
       // その他のファイルは新しいタブで開く（フォールバック付き）
       const newWindow = window.open(data.signedUrl, '_blank');
@@ -1989,100 +2006,9 @@ function toggleImageZoom() {
   }
 }
 
-// PDF表示モーダル
-function showPdfModal(fileName, pdfUrl) {
-  const content = `
-    <div class="file-viewer-modal pdf-viewer">
-      <div class="file-viewer-header">
-        <h3>${fileName}</h3>
-        <div class="file-viewer-actions">
-          <button class="btn btn--outline" onclick="adjustPdfZoom('fit-width')">幅に合わせる</button>
-          <button class="btn btn--outline" onclick="adjustPdfZoom('fit-page')">ページに合わせる</button>
-          <button class="btn btn--outline" onclick="adjustPdfZoom('zoom-in')">拡大</button>
-          <button class="btn btn--outline" onclick="adjustPdfZoom('zoom-out')">縮小</button>
-          <button class="btn btn--outline" onclick="resetPdfZoom()">リセット</button>
-          <button class="btn btn--outline" onclick="window.open('${pdfUrl}', '_blank')">新しいタブで開く</button>
-          <button class="btn btn--outline" onclick="document.getElementById('modal').classList.remove('active')">閉じる</button>
-        </div>
-      </div>
-      <div class="file-viewer-content pdf-content">
-        <div class="pdf-container">
-          <iframe id="pdf-iframe" src="${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0&view=FitH&zoom=page-width" style="width: 140%; height: 140%; border: none; transform: scale(0.7); transform-origin: top left;"></iframe>
-        </div>
-      </div>
-    </div>
-  `;
-  
-  showModal('ファイル表示', content);
-  
-  // モーダルが表示された後にPDFを調整
-  setTimeout(() => {
-    adjustPdfZoom('fit-width');
-  }, 500);
-}
+// PDF表示モーダル（削除済み）
 
-// PDFズームリセット機能
-function resetPdfZoom() {
-  const iframe = document.getElementById('pdf-iframe');
-  if (!iframe) return;
-  
-  const currentSrc = iframe.src.split('#')[0];
-  iframe.src = currentSrc + '#toolbar=0&navpanes=0&scrollbar=0&view=FitH&zoom=page-width';
-  iframe.style.width = '140%';
-  iframe.style.height = '140%';
-  iframe.style.transform = 'scale(0.7)';
-  iframe.style.transformOrigin = 'top left';
-  
-  // 親コンテナのスクロールをリセット
-  const content = iframe.closest('.file-viewer-content');
-  if (content) {
-    content.scrollTop = 0;
-    content.scrollLeft = 0;
-  }
-}
-
-// PDFズーム調整機能
-function adjustPdfZoom(fitType) {
-  const iframe = document.getElementById('pdf-iframe');
-  if (!iframe) return;
-  
-  const currentSrc = iframe.src.split('#')[0]; // Remove existing parameters
-  let currentScale = parseFloat(iframe.style.transform.match(/scale\(([^)]+)\)/)?.[1] || 1);
-  
-  switch (fitType) {
-    case 'fit-width':
-      iframe.src = currentSrc + '#view=FitH&toolbar=0&navpanes=0&scrollbar=0&zoom=page-width';
-      iframe.style.transform = 'scale(0.8)';
-      iframe.style.transformOrigin = 'top left';
-      break;
-    case 'fit-page':
-      iframe.src = currentSrc + '#view=Fit&toolbar=0&navpanes=0&scrollbar=0&zoom=page-fit';
-      iframe.style.transform = 'scale(0.7)';
-      iframe.style.transformOrigin = 'top left';
-      break;
-    case 'zoom-in':
-      currentScale = Math.min(currentScale + 0.2, 2.0);
-      iframe.style.transform = `scale(${currentScale})`;
-      iframe.style.transformOrigin = 'top left';
-      break;
-    case 'zoom-out':
-      currentScale = Math.max(currentScale - 0.2, 0.3);
-      iframe.style.transform = `scale(${currentScale})`;
-      iframe.style.transformOrigin = 'top left';
-      break;
-    default:
-      iframe.src = currentSrc + '#view=FitH&toolbar=0&navpanes=0&scrollbar=0&zoom=page-width';
-      iframe.style.transform = 'scale(0.8)';
-      iframe.style.transformOrigin = 'top left';
-  }
-  
-  // 親コンテナのスクロールをリセット
-  const content = iframe.closest('.file-viewer-content');
-  if (content) {
-    content.scrollTop = 0;
-    content.scrollLeft = 0;
-  }
-}
+// PDFズーム機能（削除済み）
 
 // ファイルダウンロード機能
 async function downloadFile(attachmentId) {
@@ -2275,8 +2201,7 @@ window.handleFileUpload = handleFileUpload;
 window.viewFile = viewFile;
 window.downloadFile = downloadFile;
 window.toggleImageZoom = toggleImageZoom;
-window.adjustPdfZoom = adjustPdfZoom;
-window.resetPdfZoom = resetPdfZoom;
+// PDF機能のwindow割り当ては削除済み
 window.editSchedule = editSchedule;
 window.deleteSchedule = deleteSchedule;
 window.editHandover = editHandover;
