@@ -117,6 +117,7 @@ async function loadAttachments() {
     }
     
     appData.attachments = attachments || [];
+    console.log('Loaded attachments:', appData.attachments.length, appData.attachments);
   } catch (error) {
     console.error('添付ファイル読み込みエラー:', error);
     appData.attachments = [];
@@ -1767,7 +1768,10 @@ function getCommentsForItem(itemType, itemId) {
 
 // 添付ファイル関連のヘルパー関数
 function getAttachmentsForItem(itemType, itemId) {
-  return appData.attachments.filter(a => a.item_type === itemType && a.item_id == itemId);
+  console.log('Getting attachments for:', itemType, itemId, 'Total attachments:', appData.attachments.length);
+  const result = appData.attachments.filter(a => a.item_type === itemType && a.item_id == itemId);
+  console.log('Found attachments:', result);
+  return result;
 }
 
 // ファイルサイズを人間が読める形式に変換
