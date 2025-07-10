@@ -2046,9 +2046,9 @@ async function viewFile(attachmentId) {
     // ファイル形式によって表示方法を変更
     const fileType = attachment.file_type.toLowerCase();
     
-    // PDFの場合は先にタブを開く（ユーザー操作と同期）
+    // PDF・画像の場合は先にタブを開く（ユーザー操作と同期）
     let placeholderTab = null;
-    if (fileType.includes('pdf')) {
+    if (fileType.includes('pdf') || fileType.includes('image')) {
       placeholderTab = window.open('about:blank', '_blank');
       if (!placeholderTab) {
         const userConfirmed = confirm('ポップアップがブロックされています。このタブでファイルを開きますか？');
@@ -2067,11 +2067,8 @@ async function viewFile(attachmentId) {
     
     if (error) throw error;
     
-    if (fileType.includes('image')) {
-      // 画像の場合はモーダルで表示
-      showImageModal(attachment.file_name, data.signedUrl);
-    } else if (fileType.includes('pdf')) {
-      // PDFの場合は既に開いたタブにURLを設定
+    if (fileType.includes('image') || fileType.includes('pdf')) {
+      // 画像・PDFの場合は既に開いたタブにURLを設定
       if (placeholderTab && !placeholderTab.closed) {
         placeholderTab.location.href = data.signedUrl;
       }
