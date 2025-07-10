@@ -32,9 +32,18 @@ function Icon(name, size = 'sm', color = 'base', className = '') {
   }
 
   // Apply consistent styling
-  svg.style.width = `var(--icon-size-${size})`;
-  svg.style.height = `var(--icon-size-${size})`;
-  svg.style.color = `var(--icon-color-${color})`;
+  const sizeMap = { xs: '12px', sm: '16px', md: '20px', lg: '24px' };
+  const colorMap = { 
+    base: 'currentColor', 
+    primary: '#3b82f6', 
+    danger: '#ef4444',
+    success: '#22c55e',
+    warning: '#f59e0b'
+  };
+  
+  svg.style.width = sizeMap[size] || '16px';
+  svg.style.height = sizeMap[size] || '16px';
+  svg.style.color = colorMap[color] || 'currentColor';
   svg.style.flexShrink = '0';
   
   // Add additional classes
