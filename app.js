@@ -118,10 +118,74 @@ async function loadAttachments() {
     
     appData.attachments = attachments || [];
     console.log('Loaded attachments:', appData.attachments.length, appData.attachments);
+    
+    // 使用量監視
+    showStorageUsage();
   } catch (error) {
     console.error('添付ファイル読み込みエラー:', error);
     appData.attachments = [];
   }
+}
+
+// ストレージ使用量監視機能
+async function showStorageUsage() {
+  try {
+    // 添付ファイルの総サイズを計算
+    const totalSize = appData.attachments.reduce((sum, attachment) => 
+      sum + (attachment.file_size || 0), 0);
+    
+    const totalSizeMB = (totalSize / 1024 / 1024).toFixed(1);
+    const usagePercent = Math.round((totalSize / (1000 * 1024 * 1024)) * 100); // 1GBに対する%
+    
+    console.log(`📊 ストレージ使用量: ${totalSizeMB}MB / 1000MB (${usagePercent}%)`);
+    console.log(`📁 ファイル数: ${appData.attachments.length}件`);
+    
+    // 警告表示
+    if (usagePercent > 80) {
+      console.warn('⚠️ ストレージ使用量が80%を超えています！');
+      showStorageWarning(totalSizeMB, usagePercent);
+    } else if (usagePercent > 60) {
+      console.warn('📈 ストレージ使用量が60%を超えました');
+    }
+    
+    // 部署別使用量
+    const departmentUsage = {};
+    appData.attachments.forEach(attachment => {
+      const dept = attachment.uploaded_by || 'unknown';
+      departmentUsage[dept] = (departmentUsage[dept] || 0) + (attachment.file_size || 0);
+    });
+    
+    console.log('📊 部署別使用量:', Object.entries(departmentUsage)
+      .map(([dept, size]) => `${dept}: ${(size / 1024 / 1024).toFixed(1)}MB`)
+      .join(', '));
+      
+  } catch (error) {
+    console.error('使用量監視エラー:', error);
+  }
+}
+
+// ストレージ警告表示
+function showStorageWarning(usedMB, usagePercent) {
+  const warningDiv = document.createElement('div');
+  warningDiv.className = 'storage-warning';
+  warningDiv.innerHTML = `
+    <div class="storage-warning-content">
+      <h3>⚠️ ストレージ容量警告</h3>
+      <p>使用量: ${usedMB}MB / 1000MB (${usagePercent}%)</p>
+      <p>容量を節約するため、不要なファイルの削除をご検討ください。</p>
+      <button onclick="this.parentElement.parentElement.remove()">閉じる</button>
+    </div>
+  `;
+  
+  // ページ上部に警告を表示
+  document.body.insertBefore(warningDiv, document.body.firstChild);
+  
+  // 5秒後に自動的に閉じる
+  setTimeout(() => {
+    if (warningDiv.parentElement) {
+      warningDiv.remove();
+    }
+  }, 5000);
 }
 
 // データベースから基本データを読み込む
@@ -1794,16 +1858,58 @@ function getFileIcon(fileType) {
   return '📎';
 }
 
+// 画像圧縮機能
+async function compressImage(file, maxWidth = 800, quality = 0.7) {
+  return new Promise((resolve) => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    
+    img.onload = () => {
+      const ratio = Math.min(maxWidth / img.width, maxWidth / img.height);
+      if (ratio >= 1) {
+        // 圧縮不要の場合は元ファイルを返す
+        resolve(file);
+        return;
+      }
+      
+      canvas.width = img.width * ratio;
+      canvas.height = img.height * ratio;
+      
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob((blob) => {
+        // 元のファイル名を保持
+        const compressedFile = new File([blob], file.name, {
+          type: 'image/jpeg',
+          lastModified: Date.now()
+        });
+        resolve(compressedFile);
+      }, 'image/jpeg', quality);
+    };
+    
+    img.onerror = () => resolve(file); // 圧縮失敗時は元ファイルを返す
+    img.src = URL.createObjectURL(file);
+  });
+}
+
 // ファイルアップロード処理
 async function uploadFile(itemType, itemId, file, uploadedBy) {
   try {
+    // 画像ファイルの場合は圧縮を試行
+    let processedFile = file;
+    if (file.type.startsWith('image/') && file.size > 500 * 1024) { // 500KB以上の画像を圧縮
+      console.log(`画像圧縮中: ${file.name} (${formatFileSize(file.size)})`);
+      processedFile = await compressImage(file);
+      console.log(`圧縮完了: ${formatFileSize(processedFile.size)} (削減率: ${Math.round((1 - processedFile.size / file.size) * 100)}%)`);
+    }
+    
     // ファイルをSupabase Storageにアップロード
-    const fileName = `${Date.now()}_${file.name}`;
+    const fileName = `${Date.now()}_${processedFile.name}`;
     const filePath = `${itemType}/${itemId}/${fileName}`;
     
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('attachments')
-      .upload(filePath, file);
+      .upload(filePath, processedFile);
 
     if (uploadError) throw uploadError;
 
@@ -1815,8 +1921,8 @@ async function uploadFile(itemType, itemId, file, uploadedBy) {
         item_id: itemId,
         file_name: file.name,
         file_path: filePath,
-        file_size: file.size,
-        file_type: file.type,
+        file_size: processedFile.size,
+        file_type: processedFile.type,
         uploaded_by: uploadedBy
       }])
       .select();
