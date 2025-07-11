@@ -1421,8 +1421,28 @@ body {
   }
   
   .calendar-controls {
-    flex-direction: column;
-    gap: var(--space-12);
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-8);
+    width: 100%;
+  }
+  
+  .calendar-controls h2 {
+    flex: 1;
+    text-align: center;
+    margin: 0;
+    font-size: var(--font-size-lg);
+  }
+  
+  .calendar-controls .btn {
+    min-width: 40px;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-size-lg);
+    font-weight: bold;
   }
   
   .calendar-day {
