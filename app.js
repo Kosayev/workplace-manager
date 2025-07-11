@@ -1662,7 +1662,6 @@ async function showDaySchedules(dateStr) {
   const content = `
     <div class="day-schedule-modal">
       <div class="day-schedule-header">
-        <h3>${formattedDate}の予定</h3>
         <button class="btn btn--primary btn--sm" onclick="addScheduleForDay('${dateStr}')">
           <span>➕</span>
           予定追加
