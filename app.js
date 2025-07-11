@@ -1135,14 +1135,17 @@ function renderCalendarGrid() {
     if (!isCurrentMonth) dayClass += ' other-month';
     if (isToday) dayClass += ' today';
     
+    // Get unique departments for this day
+    const uniqueDepartments = [...new Set(daySchedules.map(schedule => schedule.department))];
+    
     html += `
       <div class="${dayClass}" data-date="${dateStr}" onclick="showDaySchedules('${dateStr}')">
         <div class="calendar-day-number">${currentDate.getDate()}</div>
-        ${daySchedules.map(schedule => `
-          <div class="calendar-event" style="background-color: ${getDepartmentColor(schedule.department)}">
-            ${schedule.title}
-          </div>
-        `).join('')}
+        <div class="calendar-events">
+          ${uniqueDepartments.map(department => `
+            <div class="calendar-event" style="background-color: ${getDepartmentColor(department)}"></div>
+          `).join('')}
+        </div>
       </div>
     `;
   }

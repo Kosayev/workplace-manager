@@ -1242,11 +1242,14 @@ body {
 .calendar-day {
   background-color: var(--color-surface);
   padding: var(--space-12);
-  min-height: 100px;
+  height: 80px;
+  min-height: 80px;
+  max-height: 80px;
   display: flex;
   flex-direction: column;
   cursor: pointer;
   transition: background-color var(--duration-fast) var(--ease-standard);
+  overflow: hidden;
 }
 
 .calendar-day:hover {
@@ -1269,15 +1272,19 @@ body {
 }
 
 .calendar-event {
-  background-color: var(--color-primary);
-  color: var(--color-btn-primary-text);
-  padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-sm);
-  font-size: var(--font-size-xs);
-  margin-bottom: var(--space-2);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin: 1px;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+.calendar-events {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  margin-top: 4px;
 }
 
 .calendar-legend {
@@ -1446,7 +1453,9 @@ body {
   }
   
   .calendar-day {
+    height: 60px;
     min-height: 60px;
+    max-height: 60px;
   }
 }
 
