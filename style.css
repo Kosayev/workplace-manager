@@ -1502,6 +1502,16 @@ body {
     flex-direction: column;
     gap: var(--space-6);
   }
+  
+  .task-actions .btn {
+    min-width: 36px;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-6);
+    border-radius: var(--radius-sm);
+  }
 }
 
 /* Status Section Styles */
@@ -2166,15 +2176,15 @@ textarea {
   }
   
   .handover-actions .btn {
-    min-width: 50px;
-    min-height: 50px;
+    min-width: 36px;
+    min-height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: var(--space-8);
+    padding: var(--space-6);
     border-radius: var(--radius-sm);
     flex: 1;
-    max-width: 60px;
+    max-width: 45px;
   }
 }
 
