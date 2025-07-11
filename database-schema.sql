@@ -94,7 +94,7 @@ INSERT INTO departments (id, name, color) VALUES
 ('prevention', '予防係', '#F39C12'),
 ('emergency', '救急・救助係', '#27AE60'),
 ('machinery', '機械係', '#9B59B6'),
-('general_affairs', '業務全般', '#6B73FF')
+('general_affairs', '業務全般', '#E91E63')
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO priorities (id, name, color, level) VALUES
