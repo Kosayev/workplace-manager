@@ -181,6 +181,32 @@
         </div>
     </div>
 
+    <!-- Browser compatibility polyfills -->
+    <script>
+        // Polyfill for requestIdleCallback (Safari compatibility)
+        if (!window.requestIdleCallback) {
+            window.requestIdleCallback = function(callback, options) {
+                options = options || {};
+                const timeout = options.timeout || 5000;
+                return setTimeout(function() {
+                    const start = performance.now();
+                    callback({
+                        didTimeout: false,
+                        timeRemaining: function() {
+                            return Math.max(0, 50 - (performance.now() - start));
+                        }
+                    });
+                }, 1);
+            };
+        }
+        
+        if (!window.cancelIdleCallback) {
+            window.cancelIdleCallback = function(id) {
+                clearTimeout(id);
+            };
+        }
+    </script>
+    
     <!-- Supabase Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
