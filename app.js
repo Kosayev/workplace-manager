@@ -531,6 +531,8 @@ let currentCalendarDate = new Date();
 currentCalendarDate.setDate(1);
 let currentSection = 'dashboard';
 let activeHandoverDept = 'general';
+let handoverSearchQuery = '';
+let taskSearchQuery = '';
 
 // Utility Functions
 function formatDate(dateStr) {
@@ -790,7 +792,16 @@ async function renderHandoverTabs() {
 
 function renderHandoverContent() {
   const contentContainer = document.getElementById('handover-content');
-  const handovers = appData.handovers.filter(h => h.department === activeHandoverDept);
+  let handovers = appData.handovers.filter(h => h.department === activeHandoverDept);
+  
+  // Apply search filter if query exists
+  if (handoverSearchQuery.trim()) {
+    const query = handoverSearchQuery.toLowerCase();
+    handovers = handovers.filter(h => 
+      h.title.toLowerCase().includes(query) || 
+      h.description.toLowerCase().includes(query)
+    );
+  }
   
   if (handovers.length === 0) {
     contentContainer.innerHTML = '<div class="empty-state">申し送り事項がありません</div>';
@@ -916,6 +927,15 @@ function renderTasksGrid() {
   
   if (priorityFilter) {
     filteredTasks = filteredTasks.filter(t => t.priority === priorityFilter);
+  }
+  
+  // Apply search filter if query exists
+  if (taskSearchQuery.trim()) {
+    const query = taskSearchQuery.toLowerCase();
+    filteredTasks = filteredTasks.filter(t => 
+      t.title.toLowerCase().includes(query) || 
+      t.description.toLowerCase().includes(query)
+    );
   }
   
   // 新しいタスクから順に表示（created_atで降順ソート）
@@ -1149,6 +1169,47 @@ function initializeCalendarNavigation() {
     currentCalendarDate = new Date(year, month + 1, 1);
     renderCalendar();
   });
+}
+
+// 検索機能初期化
+function initializeSearchFunctionality() {
+  // 申し送り事項の検索機能
+  const handoverSearchInput = document.getElementById('handover-search');
+  const handoverSearchClear = document.getElementById('handover-search-clear');
+  
+  if (handoverSearchInput) {
+    handoverSearchInput.addEventListener('input', (e) => {
+      handoverSearchQuery = e.target.value;
+      renderHandoverContent();
+    });
+  }
+  
+  if (handoverSearchClear) {
+    handoverSearchClear.addEventListener('click', () => {
+      handoverSearchQuery = '';
+      handoverSearchInput.value = '';
+      renderHandoverContent();
+    });
+  }
+  
+  // タスク管理の検索機能
+  const taskSearchInput = document.getElementById('task-search');
+  const taskSearchClear = document.getElementById('task-search-clear');
+  
+  if (taskSearchInput) {
+    taskSearchInput.addEventListener('input', (e) => {
+      taskSearchQuery = e.target.value;
+      renderTasksGrid();
+    });
+  }
+  
+  if (taskSearchClear) {
+    taskSearchClear.addEventListener('click', () => {
+      taskSearchQuery = '';
+      taskSearchInput.value = '';
+      renderTasksGrid();
+    });
+  }
 }
 
 function renderCalendarGrid() {
@@ -2659,6 +2720,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initializeSidebarIcons();
   initializeStorageDashboard();
   initializeCalendarNavigation();
+  initializeSearchFunctionality();
 });
 
 // ストレージダッシュボード初期化
