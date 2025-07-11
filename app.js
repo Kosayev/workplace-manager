@@ -766,6 +766,9 @@ function renderHandoverContent() {
   
   contentContainer.innerHTML = handovers.map(handover => `
     <div class="handover-item">
+      <div class="handover-priority priority-${handover.priority}">
+        ${getPriorityName(handover.priority)}
+      </div>
       <div class="handover-details">
         <div class="handover-title">${handover.title}</div>
         <div class="handover-description">${handover.description}</div>
@@ -828,14 +831,14 @@ function renderHandoverContent() {
         </div>
       </div>
       <div class="handover-actions">
-        <div class="handover-priority-badge priority-${handover.priority}">
-          <span class="priority-icon">${getPriorityIcon(handover.priority)}</span>
-          <span class="priority-text">${getPriorityName(handover.priority)}</span>
-        </div>
         <button class="btn btn--sm btn--outline" onclick="showCommentModal('handover', ${handover.id}, '${handover.title}')">${window.iconSystem ? window.iconSystem.Icon('messageSquare', 'sm', 'base') : '💬'}</button>
         <button class="btn btn--sm btn--outline" onclick="showFileUploadModal('handover', ${handover.id}, '${handover.title}')">${Icon('paperclip', 'sm', 'base')}</button>
         <button class="btn btn--sm btn--outline" onclick="editHandover(${handover.id})">${window.iconSystem ? window.iconSystem.Icon('edit', 'sm', 'base') : '編集'}</button>
         <button class="btn btn--sm btn--outline" onclick="deleteHandover(${handover.id})" style="color: #dc3545; border-color: #dc3545;">${window.iconSystem ? window.iconSystem.Icon('trash2', 'sm', 'base') : '削除'}</button>
+      </div>
+      <div class="handover-priority-badge priority-${handover.priority} mobile-only">
+        <span class="priority-icon">${getPriorityIcon(handover.priority)}</span>
+        <span class="priority-text">${getPriorityName(handover.priority)}</span>
       </div>
     </div>
   `).join('');

@@ -2093,68 +2093,78 @@ textarea {
   position: relative;
 }
 
-/* Handover Actions Layout */
-.handover-actions {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-6);
-  position: absolute;
-  top: var(--space-8);
-  right: var(--space-8);
-  z-index: 10;
-}
-
-/* Hide old priority display */
-.handover-priority {
+/* Desktop: Hide mobile-only priority badge */
+.mobile-only {
   display: none;
 }
 
-/* Handover Priority Badge */
-.handover-priority-badge {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-4);
-  padding: var(--space-4) var(--space-8);
-  border-radius: var(--radius-sm);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-medium);
-  min-width: 60px;
+/* Mobile-specific layout */
+@media (max-width: 768px) {
+  /* Hide desktop priority display on mobile */
+  .handover-priority {
+    display: none;
+  }
+  
+  /* Show mobile priority badge */
+  .mobile-only {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-4);
+    padding: var(--space-4) var(--space-8);
+    margin: var(--space-8) 0;
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    min-width: 60px;
+  }
+  
+  .mobile-only.priority-urgent {
+    background-color: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #fca5a5;
+  }
+  
+  .mobile-only.priority-high {
+    background-color: #fed7aa;
+    color: #ea580c;
+    border: 1px solid #fdba74;
+  }
+  
+  .mobile-only.priority-medium {
+    background-color: #fef3c7;
+    color: #d97706;
+    border: 1px solid #fde68a;
+  }
+  
+  .mobile-only.priority-low {
+    background-color: #dcfce7;
+    color: #16a34a;
+    border: 1px solid #bbf7d0;
+  }
+  
+  .handover-actions {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: var(--space-8);
+    margin-top: var(--space-8);
+    padding-top: var(--space-8);
+    border-top: 1px solid var(--color-card-border);
+    flex-wrap: wrap;
+  }
+  
+  .handover-actions .btn {
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-6);
+  }
 }
 
-.handover-priority-badge.priority-urgent {
-  background-color: #fee2e2;
-  color: #dc2626;
-  border: 1px solid #fca5a5;
-}
-
-.handover-priority-badge.priority-high {
-  background-color: #fed7aa;
-  color: #ea580c;
-  border: 1px solid #fdba74;
-}
-
-.handover-priority-badge.priority-medium {
-  background-color: #fef3c7;
-  color: #d97706;
-  border: 1px solid #fde68a;
-}
-
-.handover-priority-badge.priority-low {
-  background-color: #dcfce7;
-  color: #16a34a;
-  border: 1px solid #bbf7d0;
-}
-
-.handover-priority-badge .priority-icon {
-  font-size: var(--font-size-sm);
-  line-height: 1;
-}
-
-.handover-priority-badge .priority-text {
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-medium);
-}
 
 /* File Attachment Styles */
 .attachments-section {
