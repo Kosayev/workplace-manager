@@ -383,7 +383,7 @@ async function loadBasicData() {
         {"id": "prevention", "name": "予防係", "color": "#F39C12"},
         {"id": "emergency", "name": "救急・救助係", "color": "#27AE60"},
         {"id": "machinery", "name": "機械係", "color": "#9B59B6"},
-        {"id": "general_affairs", "name": "業務全般", "color": "#E91E63"}
+        {"id": "general_affairs", "name": "業務全般", "color": "#00BCD4"}
       ];
       console.log('フォールバックデータを使用:', appData.departments);
       return; // 早期リターンして以下の処理をスキップ
@@ -394,19 +394,19 @@ async function loadBasicData() {
     
     // 業務全般部署の色を更新（古い色の場合）
     const generalAffairsDept = departments.find(d => d.id === 'general_affairs');
-    if (generalAffairsDept && generalAffairsDept.color === '#6B73FF') {
-      console.log('業務全般部署の色を更新中...');
+    if (generalAffairsDept && (generalAffairsDept.color === '#6B73FF' || generalAffairsDept.color === '#E91E63')) {
+      console.log('業務全般部署の色をシアン色に更新中...');
       try {
         const { error: updateError } = await supabase
           .from('departments')
-          .update({ color: '#E91E63' })
+          .update({ color: '#00BCD4' })
           .eq('id', 'general_affairs');
         
         if (updateError) {
           console.error('部署色更新エラー:', updateError);
         } else {
-          console.log('業務全般部署の色を更新しました');
-          generalAffairsDept.color = '#E91E63';
+          console.log('業務全般部署の色をシアン色に更新しました');
+          generalAffairsDept.color = '#00BCD4';
         }
       } catch (updateErr) {
         console.error('部署色更新例外:', updateErr);
