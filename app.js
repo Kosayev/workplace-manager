@@ -161,6 +161,9 @@ async function showStorageUsage() {
     
     // ダッシュボードに表示
     updateStorageDashboard(totalSizeMB, usagePercent, departmentUsage);
+    
+    // 古いファイル削除チェック
+    await checkAndDeleteOldFiles();
       
   } catch (error) {
     console.error('使用量監視エラー:', error);
@@ -245,14 +248,110 @@ function updateStorageDashboard(totalSizeMB, usagePercent, departmentUsage) {
           <div class="storage-stat-label">残り容量</div>
         </div>
       </div>
-      ${departmentItems ? `
-        <div class="department-usage">
-          <h4 style="margin: 0 0 8px 0; font-size: 14px; color: var(--color-text-secondary);">部署別使用量</h4>
-          ${departmentItems}
-        </div>
-      ` : ''}
     `;
   }
+}
+
+// 古いファイル削除機能
+async function checkAndDeleteOldFiles() {
+  try {
+    const threeMonthsAgo = new Date();
+    threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+    
+    console.log(`📅 3ヶ月前の日付: ${threeMonthsAgo.toISOString().split('T')[0]}`);
+    
+    // 3ヶ月以上前のファイルを取得
+    const oldFiles = appData.attachments.filter(attachment => {
+      const createdAt = new Date(attachment.created_at);
+      return createdAt < threeMonthsAgo;
+    });
+    
+    if (oldFiles.length === 0) {
+      console.log('🧹 削除対象の古いファイルはありません');
+      return;
+    }
+    
+    console.log(`🧹 ${oldFiles.length}件の古いファイルを削除します`);
+    
+    // 削除対象ファイルのサイズを計算
+    const deletedSize = oldFiles.reduce((sum, file) => sum + (file.file_size || 0), 0);
+    const deletedSizeMB = (deletedSize / 1024 / 1024).toFixed(1);
+    
+    // バッチ削除を実行
+    let successCount = 0;
+    let errorCount = 0;
+    
+    for (const file of oldFiles) {
+      try {
+        // Supabase Storageからファイルを削除
+        const { error: storageError } = await supabase.storage
+          .from('attachments')
+          .remove([file.file_path]);
+        
+        if (storageError) {
+          console.warn(`ストレージ削除エラー (${file.file_name}):`, storageError);
+        }
+        
+        // データベースから削除
+        const { error: dbError } = await supabase
+          .from('attachments')
+          .delete()
+          .eq('id', file.id);
+        
+        if (dbError) {
+          console.error(`DB削除エラー (${file.file_name}):`, dbError);
+          errorCount++;
+        } else {
+          successCount++;
+          console.log(`✅ 削除完了: ${file.file_name} (${(file.file_size / 1024 / 1024).toFixed(1)}MB)`);
+        }
+      } catch (error) {
+        console.error(`ファイル削除エラー (${file.file_name}):`, error);
+        errorCount++;
+      }
+    }
+    
+    if (successCount > 0) {
+      console.log(`🎉 ${successCount}件のファイルを削除しました (${deletedSizeMB}MB節約)`);
+      
+      // 削除通知を表示
+      showFileCleanupNotification(successCount, deletedSizeMB);
+      
+      // 添付ファイルリストを再読み込み
+      await loadAttachments();
+    }
+    
+    if (errorCount > 0) {
+      console.warn(`⚠️ ${errorCount}件のファイル削除に失敗しました`);
+    }
+    
+  } catch (error) {
+    console.error('古いファイル削除エラー:', error);
+  }
+}
+
+// ファイル削除通知表示
+function showFileCleanupNotification(deletedCount, savedMB) {
+  const notificationDiv = document.createElement('div');
+  notificationDiv.className = 'file-cleanup-notification';
+  notificationDiv.innerHTML = `
+    <div class="cleanup-notification-content">
+      <h3>🧹 ファイル自動削除完了</h3>
+      <p>${deletedCount}件の古いファイルを削除しました</p>
+      <p>節約容量: ${savedMB}MB</p>
+      <button onclick="this.parentElement.parentElement.remove()">閉じる</button>
+    </div>
+  `;
+  
+  // ページ上部に通知を表示
+  document.body.insertBefore(notificationDiv, document.body.firstChild);
+  
+  // 8秒後に自動的に閉じる
+  setTimeout(() => {
+    if (notificationDiv.parentElement) {
+      notificationDiv.remove();
+    }
+  }, 8000);
 }
 
 // データベースから基本データを読み込む
@@ -2474,6 +2573,8 @@ document.addEventListener('DOMContentLoaded', () => {
 // ストレージダッシュボード初期化
 function initializeStorageDashboard() {
   const refreshBtn = document.getElementById('refresh-storage-btn');
+  const cleanupBtn = document.getElementById('cleanup-files-btn');
+  
   if (refreshBtn) {
     refreshBtn.addEventListener('click', async () => {
       refreshBtn.disabled = true;
@@ -2489,6 +2590,28 @@ function initializeStorageDashboard() {
         console.error('ストレージ更新エラー:', error);
         refreshBtn.disabled = false;
         refreshBtn.innerHTML = '<span>🔄</span> 更新';
+      }
+    });
+  }
+  
+  if (cleanupBtn) {
+    cleanupBtn.addEventListener('click', async () => {
+      const confirmed = confirm('3ヶ月以上経過したファイルを削除します。\nこの操作は元に戻せません。実行しますか？');
+      if (!confirmed) return;
+      
+      cleanupBtn.disabled = true;
+      cleanupBtn.innerHTML = '<span>🧹</span> 削除中...';
+      
+      try {
+        await checkAndDeleteOldFiles();
+        setTimeout(() => {
+          cleanupBtn.disabled = false;
+          cleanupBtn.innerHTML = '<span>🧹</span> 古いファイル削除';
+        }, 1000);
+      } catch (error) {
+        console.error('ファイル削除エラー:', error);
+        cleanupBtn.disabled = false;
+        cleanupBtn.innerHTML = '<span>🧹</span> 古いファイル削除';
       }
     });
   }

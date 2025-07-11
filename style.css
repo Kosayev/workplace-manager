@@ -2006,6 +2006,10 @@ textarea {
   margin-top: var(--space-8);
 }
 
+.card-header .storage-actions {
+  margin-top: 0;
+}
+
 @media (max-width: 768px) {
   .storage-stats {
     grid-template-columns: repeat(2, 1fr);
@@ -2013,6 +2017,62 @@ textarea {
   
   .storage-actions {
     flex-direction: column;
+  }
+}
+
+/* File Cleanup Notification Styles */
+.file-cleanup-notification {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10000;
+  background-color: #d1fae5;
+  border-bottom: 2px solid #10b981;
+  padding: var(--space-8);
+  animation: slideDown 0.3s ease-out;
+}
+
+.cleanup-notification-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-12);
+}
+
+.file-cleanup-notification h3 {
+  margin: 0;
+  color: #065f46;
+  font-size: var(--font-size-base);
+}
+
+.file-cleanup-notification p {
+  margin: 0;
+  color: #065f46;
+  font-size: var(--font-size-sm);
+}
+
+.file-cleanup-notification button {
+  background-color: #10b981;
+  color: white;
+  border: none;
+  padding: var(--space-4) var(--space-8);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+}
+
+.file-cleanup-notification button:hover {
+  background-color: #059669;
+}
+
+@media (max-width: 768px) {
+  .cleanup-notification-content {
+    flex-direction: column;
+    text-align: center;
+    gap: var(--space-8);
   }
 }
 

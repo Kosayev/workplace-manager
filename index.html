@@ -70,10 +70,16 @@
                 <div class="schedule-card storage-card">
                     <div class="card-header">
                         <h3>ストレージ使用状況</h3>
-                        <button class="btn btn--outline btn--sm" id="refresh-storage-btn">
-                            <span>🔄</span>
-                            更新
-                        </button>
+                        <div class="storage-actions">
+                            <button class="btn btn--outline btn--sm" id="refresh-storage-btn">
+                                <span>🔄</span>
+                                更新
+                            </button>
+                            <button class="btn btn--outline btn--sm" id="cleanup-files-btn">
+                                <span>🧹</span>
+                                古いファイル削除
+                            </button>
+                        </div>
                     </div>
                     <div class="storage-dashboard" id="storage-dashboard">
                         <div class="storage-overview" id="storage-overview">
