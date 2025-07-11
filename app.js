@@ -969,10 +969,10 @@ function renderTasksGrid() {
         })()}
       </div>
       <div class="task-actions">
-        <button class="btn btn--sm btn--outline" onclick="showCommentModal('task', ${task.id}, '${task.title}')">${window.iconSystem ? window.iconSystem.Icon('messageSquare', 'sm', 'base') : '💬'}</button>
-        <button class="btn btn--sm btn--outline" onclick="showFileUploadModal('task', ${task.id}, '${task.title}')">${Icon('paperclip', 'sm', 'base')}</button>
-        <button class="btn btn--sm btn--outline" onclick="editTask(${task.id})">${window.iconSystem ? window.iconSystem.Icon('edit', 'sm', 'base') : '編集'}</button>
-        <button class="btn btn--sm btn--outline" onclick="deleteTask(${task.id})" style="color: #dc3545; border-color: #dc3545;">${window.iconSystem ? window.iconSystem.Icon('trash2', 'sm', 'base') : '削除'}</button>
+        <button class="btn btn--sm btn--outline" onclick="showCommentModal('task', ${task.id}, '${task.title}')">${window.iconSystem ? window.iconSystem.Icon('messageSquare', 'xs', 'base') : '💬'}</button>
+        <button class="btn btn--sm btn--outline" onclick="showFileUploadModal('task', ${task.id}, '${task.title}')">${Icon('paperclip', 'xs', 'base')}</button>
+        <button class="btn btn--sm btn--outline" onclick="editTask(${task.id})">${window.iconSystem ? window.iconSystem.Icon('edit', 'xs', 'base') : '編集'}</button>
+        <button class="btn btn--sm btn--outline" onclick="deleteTask(${task.id})" style="color: #dc3545; border-color: #dc3545;">${window.iconSystem ? window.iconSystem.Icon('trash2', 'xs', 'base') : '削除'}</button>
       </div>
     </div>
   `).join('');
