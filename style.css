@@ -2105,18 +2105,25 @@ textarea {
     display: none;
   }
   
-  /* Show mobile priority badge */
+  /* Mobile handover item structure */
+  .handover-item {
+    position: static;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Show mobile priority badge at top */
   .mobile-only {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: var(--space-4);
-    padding: var(--space-4) var(--space-8);
-    margin: var(--space-8) 0;
+    padding: var(--space-6) var(--space-12);
+    margin: 0 0 var(--space-12) 0;
     border-radius: var(--radius-sm);
     font-size: var(--font-size-xs);
     font-weight: var(--font-weight-medium);
-    min-width: 60px;
+    align-self: flex-start;
   }
   
   .mobile-only.priority-urgent {
@@ -2143,25 +2150,31 @@ textarea {
     border: 1px solid #bbf7d0;
   }
   
+  /* Mobile action buttons at bottom */
   .handover-actions {
+    position: static;
     display: flex;
     flex-direction: row;
-    justify-content: center;
+    justify-content: space-around;
     align-items: center;
-    gap: var(--space-8);
-    margin-top: var(--space-8);
-    padding-top: var(--space-8);
+    gap: var(--space-4);
+    margin-top: var(--space-16);
+    padding: var(--space-12) var(--space-8);
     border-top: 1px solid var(--color-card-border);
-    flex-wrap: wrap;
+    background-color: var(--color-background);
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
   }
   
   .handover-actions .btn {
-    min-width: 44px;
-    min-height: 44px;
+    min-width: 50px;
+    min-height: 50px;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: var(--space-6);
+    padding: var(--space-8);
+    border-radius: var(--radius-sm);
+    flex: 1;
+    max-width: 60px;
   }
 }
 
