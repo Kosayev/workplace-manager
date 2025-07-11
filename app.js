@@ -495,7 +495,9 @@ async function loadTasks() {
   }
 }
 
+// Set to first day of current month to avoid date calculation issues
 let currentCalendarDate = new Date();
+currentCalendarDate.setDate(1);
 let currentSection = 'dashboard';
 let activeHandoverDept = 'general';
 
@@ -1087,15 +1089,33 @@ function renderCalendarHeader() {
   const monthNames = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
   const monthElement = document.getElementById('current-month');
   monthElement.textContent = `${currentCalendarDate.getFullYear()}年${monthNames[currentCalendarDate.getMonth()]}`;
+}
+
+// Initialize calendar navigation (called once)
+function initializeCalendarNavigation() {
+  const prevButton = document.getElementById('prev-month');
+  const nextButton = document.getElementById('next-month');
+  
+  // Remove existing listeners to prevent duplicates
+  const newPrevButton = prevButton.cloneNode(true);
+  const newNextButton = nextButton.cloneNode(true);
+  prevButton.parentNode.replaceChild(newPrevButton, prevButton);
+  nextButton.parentNode.replaceChild(newNextButton, nextButton);
   
   // Add event listeners for navigation
   document.getElementById('prev-month').addEventListener('click', () => {
-    currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
+    // Safe date calculation - use first day of month
+    const year = currentCalendarDate.getFullYear();
+    const month = currentCalendarDate.getMonth();
+    currentCalendarDate = new Date(year, month - 1, 1);
     renderCalendar();
   });
   
   document.getElementById('next-month').addEventListener('click', () => {
-    currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
+    // Safe date calculation - use first day of month
+    const year = currentCalendarDate.getFullYear();
+    const month = currentCalendarDate.getMonth();
+    currentCalendarDate = new Date(year, month + 1, 1);
     renderCalendar();
   });
 }
@@ -2608,6 +2628,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initializeTextareaAutoResize();
   initializeSidebarIcons();
   initializeStorageDashboard();
+  initializeCalendarNavigation();
 });
 
 // ストレージダッシュボード初期化
