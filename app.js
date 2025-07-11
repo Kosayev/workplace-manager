@@ -830,9 +830,17 @@ function renderHandoverContent() {
           })()}
         </div>
       </div>
+      <div class="handover-footer">
+        <div class="handover-priority-display">
+          <span class="priority-icon priority-${handover.priority}">${getPriorityIcon(handover.priority)}</span>
+          <span class="priority-text">${getPriorityName(handover.priority)}</span>
+        </div>
+        <div class="handover-footer-actions">
+          <button class="btn btn--sm btn--outline" onclick="showCommentModal('handover', ${handover.id}, '${handover.title}')">${window.iconSystem ? window.iconSystem.Icon('messageSquare', 'sm', 'base') : '💬'}</button>
+          <button class="btn btn--sm btn--outline" onclick="showFileUploadModal('handover', ${handover.id}, '${handover.title}')">${Icon('paperclip', 'sm', 'base')}</button>
+        </div>
+      </div>
       <div class="handover-actions">
-        <button class="btn btn--sm btn--outline" onclick="showCommentModal('handover', ${handover.id}, '${handover.title}')">${window.iconSystem ? window.iconSystem.Icon('messageSquare', 'sm', 'base') : '💬'}</button>
-        <button class="btn btn--sm btn--outline" onclick="showFileUploadModal('handover', ${handover.id}, '${handover.title}')">${Icon('paperclip', 'sm', 'base')}</button>
         <button class="btn btn--sm btn--outline" onclick="editHandover(${handover.id})">${window.iconSystem ? window.iconSystem.Icon('edit', 'sm', 'base') : '編集'}</button>
         <button class="btn btn--sm btn--outline" onclick="deleteHandover(${handover.id})" style="color: #dc3545; border-color: #dc3545;">${window.iconSystem ? window.iconSystem.Icon('trash2', 'sm', 'base') : '削除'}</button>
       </div>
@@ -2028,6 +2036,22 @@ function formatFileSize(bytes) {
   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// Get priority icon
+function getPriorityIcon(priority) {
+  switch (priority) {
+    case 'urgent':
+      return '🔴';
+    case 'high':
+      return '🟠';
+    case 'medium':
+      return '🟡';
+    case 'low':
+      return '🟢';
+    default:
+      return '⚪';
+  }
 }
 
 // ファイルアイコンを取得
