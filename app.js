@@ -158,6 +158,9 @@ async function showStorageUsage() {
     console.log('📊 部署別使用量:', Object.entries(departmentUsage)
       .map(([dept, size]) => `${dept}: ${(size / 1024 / 1024).toFixed(1)}MB`)
       .join(', '));
+    
+    // ダッシュボードに表示
+    updateStorageDashboard(totalSizeMB, usagePercent, departmentUsage);
       
   } catch (error) {
     console.error('使用量監視エラー:', error);
@@ -186,6 +189,70 @@ function showStorageWarning(usedMB, usagePercent) {
       warningDiv.remove();
     }
   }, 5000);
+}
+
+// ストレージダッシュボード更新
+function updateStorageDashboard(totalSizeMB, usagePercent, departmentUsage) {
+  const storageFill = document.getElementById('storage-fill');
+  const storageUsed = document.getElementById('storage-used');
+  const storagePercent = document.getElementById('storage-percent');
+  const storageDetails = document.getElementById('storage-details');
+  
+  if (storageFill) {
+    storageFill.style.width = `${Math.min(usagePercent, 100)}%`;
+  }
+  
+  if (storageUsed) {
+    storageUsed.textContent = `${totalSizeMB} MB`;
+  }
+  
+  if (storagePercent) {
+    storagePercent.textContent = `${usagePercent}%`;
+  }
+  
+  if (storageDetails) {
+    // 統計情報の生成
+    const fileCount = appData.attachments.length;
+    const avgFileSize = fileCount > 0 ? (parseFloat(totalSizeMB) / fileCount).toFixed(1) : '0.0';
+    const compressedCount = appData.attachments.filter(a => a.file_type === 'image/jpeg').length;
+    
+    // 部署別使用量の準備
+    const departmentItems = Object.entries(departmentUsage)
+      .sort((a, b) => b[1] - a[1])
+      .map(([dept, size]) => `
+        <div class="department-item">
+          <span class="department-name">${dept}</span>
+          <span class="department-size">${(size / 1024 / 1024).toFixed(1)} MB</span>
+        </div>
+      `).join('');
+    
+    storageDetails.innerHTML = `
+      <div class="storage-stats">
+        <div class="storage-stat">
+          <div class="storage-stat-value">${fileCount}</div>
+          <div class="storage-stat-label">ファイル数</div>
+        </div>
+        <div class="storage-stat">
+          <div class="storage-stat-value">${avgFileSize} MB</div>
+          <div class="storage-stat-label">平均サイズ</div>
+        </div>
+        <div class="storage-stat">
+          <div class="storage-stat-value">${compressedCount}</div>
+          <div class="storage-stat-label">圧縮済み</div>
+        </div>
+        <div class="storage-stat">
+          <div class="storage-stat-value">${Math.max(0, 1000 - parseFloat(totalSizeMB)).toFixed(1)} MB</div>
+          <div class="storage-stat-label">残り容量</div>
+        </div>
+      </div>
+      ${departmentItems ? `
+        <div class="department-usage">
+          <h4 style="margin: 0 0 8px 0; font-size: 14px; color: var(--color-text-secondary);">部署別使用量</h4>
+          ${departmentItems}
+        </div>
+      ` : ''}
+    `;
+  }
 }
 
 // データベースから基本データを読み込む
@@ -2401,4 +2468,28 @@ document.addEventListener('DOMContentLoaded', () => {
   initializeApp();
   initializeTextareaAutoResize();
   initializeSidebarIcons();
+  initializeStorageDashboard();
 });
+
+// ストレージダッシュボード初期化
+function initializeStorageDashboard() {
+  const refreshBtn = document.getElementById('refresh-storage-btn');
+  if (refreshBtn) {
+    refreshBtn.addEventListener('click', async () => {
+      refreshBtn.disabled = true;
+      refreshBtn.innerHTML = '<span>⟳</span> 更新中...';
+      
+      try {
+        await loadAttachments();
+        setTimeout(() => {
+          refreshBtn.disabled = false;
+          refreshBtn.innerHTML = '<span>🔄</span> 更新';
+        }, 500);
+      } catch (error) {
+        console.error('ストレージ更新エラー:', error);
+        refreshBtn.disabled = false;
+        refreshBtn.innerHTML = '<span>🔄</span> 更新';
+      }
+    });
+  }
+}

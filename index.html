@@ -66,6 +66,30 @@
                     </div>
                     <div class="schedule-list" id="tomorrow-schedule"></div>
                 </div>
+                
+                <div class="schedule-card storage-card">
+                    <div class="card-header">
+                        <h3>ストレージ使用状況</h3>
+                        <button class="btn btn--outline btn--sm" id="refresh-storage-btn">
+                            <span>🔄</span>
+                            更新
+                        </button>
+                    </div>
+                    <div class="storage-dashboard" id="storage-dashboard">
+                        <div class="storage-overview" id="storage-overview">
+                            <div class="storage-meter">
+                                <div class="storage-bar">
+                                    <div class="storage-fill" id="storage-fill"></div>
+                                </div>
+                                <div class="storage-text">
+                                    <span id="storage-used">0 MB</span> / <span id="storage-limit">1000 MB</span>
+                                    (<span id="storage-percent">0%</span>)
+                                </div>
+                            </div>
+                        </div>
+                        <div class="storage-details" id="storage-details"></div>
+                    </div>
+                </div>
             </div>
         </section>
 
