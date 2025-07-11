@@ -1416,7 +1416,18 @@ body {
   }
   
   .tab-buttons {
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: var(--space-1);
+    background-color: var(--color-secondary);
+    padding: var(--space-8);
+  }
+  
+  .tab-button {
+    padding: var(--space-12);
+    font-size: var(--font-size-sm);
+    border-radius: var(--radius-sm);
   }
   
   .filter-controls {
