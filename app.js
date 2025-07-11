@@ -594,9 +594,26 @@ function initializeNavigation() {
     });
   });
 
-  sidebarToggle.addEventListener('click', () => {
-    sidebar.classList.toggle('active');
-  });
+  if (sidebarToggle && sidebar) {
+    sidebarToggle.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      sidebar.classList.toggle('active');
+      console.log('Sidebar toggled:', sidebar.classList.contains('active'));
+    });
+    
+    // サイドバー外をクリックしたときに閉じる
+    document.addEventListener('click', (e) => {
+      if (window.innerWidth <= 768 && 
+          !sidebar.contains(e.target) && 
+          !sidebarToggle.contains(e.target) &&
+          sidebar.classList.contains('active')) {
+        sidebar.classList.remove('active');
+      }
+    });
+  } else {
+    console.error('Sidebar toggle or sidebar element not found');
+  }
 }
 
 function showSection(section) {

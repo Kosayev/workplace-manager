@@ -830,6 +830,8 @@ body {
   border: none;
   cursor: pointer;
   padding: var(--space-8);
+  align-items: center;
+  justify-content: center;
 }
 
 .sidebar-toggle span {
@@ -1371,6 +1373,7 @@ body {
   .sidebar {
     transform: translateX(-100%);
     width: 100%;
+    z-index: 1000;
   }
   
   .sidebar.active {
@@ -1379,11 +1382,24 @@ body {
   
   .sidebar-toggle {
     display: flex;
+    position: fixed;
+    top: var(--space-16);
+    left: var(--space-16);
+    z-index: 1001;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sm);
+    width: 44px;
+    height: 44px;
+    align-items: center;
+    justify-content: center;
   }
   
   .main-content {
     margin-left: 0;
     padding: var(--space-16);
+    padding-top: 60px; /* ハンバーガーメニューの高さを考慮 */
   }
   
   .dashboard-grid {
