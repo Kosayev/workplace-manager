@@ -2088,20 +2088,17 @@ textarea {
   }
 }
 
-/* Handover Footer Styles */
-.handover-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: var(--space-12);
-  padding-top: var(--space-8);
-  border-top: 1px solid var(--color-card-border);
-}
-
+/* Handover Priority Display */
 .handover-priority-display {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: var(--space-6);
+  margin: var(--space-8) 0;
+  padding: var(--space-6) var(--space-8);
+  background-color: var(--color-background);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-card-border);
 }
 
 .priority-icon {
@@ -2112,34 +2109,7 @@ textarea {
 .priority-text {
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
-  color: var(--color-text-secondary);
-}
-
-.handover-footer-actions {
-  display: flex;
-  gap: var(--space-4);
-}
-
-.handover-footer-actions .btn {
-  padding: var(--space-4) var(--space-6);
-  font-size: var(--font-size-xs);
-  border-radius: var(--radius-sm);
-}
-
-@media (max-width: 768px) {
-  .handover-footer {
-    flex-direction: column;
-    gap: var(--space-8);
-    align-items: stretch;
-  }
-  
-  .handover-priority-display {
-    justify-content: center;
-  }
-  
-  .handover-footer-actions {
-    justify-content: center;
-  }
+  color: var(--color-text);
 }
 
 /* File Attachment Styles */
