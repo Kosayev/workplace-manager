@@ -751,11 +751,6 @@ function renderScheduleList(containerId, date) {
           })()}
         </div>
       </div>
-      <div class="schedule-actions">
-        <button class="btn btn--sm btn--outline" onclick="showFileUploadModal('schedule', ${schedule.id}, '${schedule.title}')">${Icon('paperclip', 'sm', 'base')}</button>
-        <button class="btn btn--sm btn--outline" onclick="editSchedule(${schedule.id})">${window.iconSystem ? window.iconSystem.Icon('edit', 'sm', 'base') : '編集'}</button>
-        <button class="btn btn--sm btn--outline" onclick="deleteSchedule(${schedule.id})" style="color: #dc3545; border-color: #dc3545;">${window.iconSystem ? window.iconSystem.Icon('trash2', 'sm', 'base') : '削除'}</button>
-      </div>
     </div>
   `).join('');
 }
