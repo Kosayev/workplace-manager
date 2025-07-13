@@ -3210,6 +3210,107 @@ textarea {
   animation: float 3s ease-in-out infinite;
 }
 
+/* Pagination Styles */
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-8);
+  margin: var(--space-32) 0 var(--space-16);
+  flex-wrap: wrap;
+}
+
+.pagination-btn {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+  padding: var(--space-8) var(--space-12);
+  border-radius: var(--radius-base);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-standard);
+  min-width: 40px;
+  text-align: center;
+  
+  /* 3D効果 */
+  box-shadow: var(--shadow-sm);
+  transform: translateY(0);
+}
+
+.pagination-btn:hover:not(.disabled) {
+  background-color: var(--color-primary);
+  color: var(--color-btn-primary-text);
+  border-color: var(--color-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.pagination-btn:active:not(.disabled) {
+  transform: translateY(0);
+  box-shadow: var(--shadow-xs);
+}
+
+.pagination-btn.active {
+  background-color: var(--color-primary);
+  color: var(--color-btn-primary-text);
+  border-color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+  box-shadow: var(--shadow-md);
+}
+
+.pagination-btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: var(--color-secondary);
+  color: var(--color-text-secondary);
+}
+
+.pagination-ellipsis {
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-medium);
+  padding: var(--space-8) var(--space-4);
+}
+
+.pagination-info {
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin-top: var(--space-16);
+  font-weight: var(--font-weight-medium);
+}
+
+/* モバイル対応 */
+@media (max-width: 768px) {
+  .pagination-controls {
+    gap: var(--space-4);
+    margin: var(--space-24) 0 var(--space-12);
+  }
+  
+  .pagination-btn {
+    padding: var(--space-6) var(--space-8);
+    font-size: var(--font-size-xs);
+    min-width: 32px;
+  }
+  
+  .pagination-ellipsis {
+    padding: var(--space-6) var(--space-2);
+  }
+}
+
+/* ダークモード対応 */
+@media (prefers-color-scheme: dark) {
+  .pagination-btn {
+    background-color: var(--color-surface);
+    border-color: var(--color-border);
+  }
+}
+
+[data-color-scheme="dark"] .pagination-btn {
+  background-color: var(--color-surface);
+  border-color: var(--color-border);
+}
+
 /* Animation and transition settings for accessibility */
 @media (prefers-reduced-motion: reduce) {
   * {
@@ -3225,5 +3326,9 @@ textarea {
   .stagger-animation {
     opacity: 1 !important;
     animation: none !important;
+  }
+  
+  .pagination-btn {
+    transform: none !important;
   }
 }

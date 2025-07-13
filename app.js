@@ -534,6 +534,92 @@ let activeHandoverDept = 'general';
 let handoverSearchQuery = '';
 let taskSearchQuery = '';
 
+// ページネーション設定
+const ITEMS_PER_PAGE = 50;
+let currentHandoverPage = 1;
+let currentTaskPage = 1;
+
+// ページネーション用ヘルパー関数
+function paginateArray(array, page, itemsPerPage = ITEMS_PER_PAGE) {
+  const startIndex = (page - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  return {
+    items: array.slice(startIndex, endIndex),
+    totalItems: array.length,
+    totalPages: Math.ceil(array.length / itemsPerPage),
+    currentPage: page,
+    hasNextPage: endIndex < array.length,
+    hasPrevPage: page > 1
+  };
+}
+
+function createPaginationHTML(paginationInfo, onPageChange) {
+  const { currentPage, totalPages, hasNextPage, hasPrevPage } = paginationInfo;
+  
+  if (totalPages <= 1) return '';
+  
+  let paginationHTML = '<div class="pagination-controls">';
+  
+  // 前へボタン
+  paginationHTML += `
+    <button class="pagination-btn ${!hasPrevPage ? 'disabled' : ''}" 
+            onclick="${onPageChange}(${currentPage - 1})" 
+            ${!hasPrevPage ? 'disabled' : ''}>
+      ‹ 前へ
+    </button>
+  `;
+  
+  // ページ番号
+  const startPage = Math.max(1, currentPage - 2);
+  const endPage = Math.min(totalPages, currentPage + 2);
+  
+  if (startPage > 1) {
+    paginationHTML += `<button class="pagination-btn" onclick="${onPageChange}(1)">1</button>`;
+    if (startPage > 2) {
+      paginationHTML += '<span class="pagination-ellipsis">...</span>';
+    }
+  }
+  
+  for (let i = startPage; i <= endPage; i++) {
+    paginationHTML += `
+      <button class="pagination-btn ${i === currentPage ? 'active' : ''}" 
+              onclick="${onPageChange}(${i})">
+        ${i}
+      </button>
+    `;
+  }
+  
+  if (endPage < totalPages) {
+    if (endPage < totalPages - 1) {
+      paginationHTML += '<span class="pagination-ellipsis">...</span>';
+    }
+    paginationHTML += `<button class="pagination-btn" onclick="${onPageChange}(${totalPages})">${totalPages}</button>`;
+  }
+  
+  // 次へボタン
+  paginationHTML += `
+    <button class="pagination-btn ${!hasNextPage ? 'disabled' : ''}" 
+            onclick="${onPageChange}(${currentPage + 1})" 
+            ${!hasNextPage ? 'disabled' : ''}>
+      次へ ›
+    </button>
+  `;
+  
+  paginationHTML += '</div>';
+  
+  // 件数表示
+  const startItem = (currentPage - 1) * ITEMS_PER_PAGE + 1;
+  const endItem = Math.min(currentPage * ITEMS_PER_PAGE, paginationInfo.totalItems);
+  
+  paginationHTML += `
+    <div class="pagination-info">
+      ${startItem}-${endItem}件 / 全${paginationInfo.totalItems}件を表示
+    </div>
+  `;
+  
+  return paginationHTML;
+}
+
 // Utility Functions
 function formatDate(dateStr) {
   const date = new Date(dateStr);
@@ -789,6 +875,7 @@ async function renderHandoverTabs() {
   tabsContainer.querySelectorAll('.tab-button').forEach(button => {
     button.addEventListener('click', () => {
       activeHandoverDept = button.dataset.department;
+      currentHandoverPage = 1; // 部署変更時はページリセット
       renderHandovers();
     });
   });
@@ -812,7 +899,12 @@ function renderHandoverContent() {
     return;
   }
   
-  contentContainer.innerHTML = handovers.map(handover => `
+  // ページネーション適用
+  const paginationInfo = paginateArray(handovers, currentHandoverPage);
+  const paginatedHandovers = paginationInfo.items;
+  
+  // 申し送り項目のHTML生成
+  const handoverItemsHTML = paginatedHandovers.map(handover => `
     <div class="handover-item">
       <div class="handover-priority-badge priority-${handover.priority} mobile-only">
         <span class="priority-icon">${getPriorityIcon(handover.priority)}</span>
@@ -891,11 +983,32 @@ function renderHandoverContent() {
     </div>
   `).join('');
   
+  // ページネーションコントロールのHTML生成
+  const paginationHTML = createPaginationHTML(paginationInfo, 'changeHandoverPage');
+  
+  // コンテンツエリアにHTML設定
+  contentContainer.innerHTML = `
+    ${handoverItemsHTML}
+    ${paginationHTML}
+  `;
+  
   // Apply stagger animation to handover items
   setTimeout(() => {
     applyStaggerAnimation(contentContainer, '.handover-item');
     initializeAnimations();
   }, 100);
+}
+
+// 申し送り事項のページ変更関数
+function changeHandoverPage(newPage) {
+  currentHandoverPage = newPage;
+  renderHandoverContent();
+  
+  // ページ変更時は先頭にスクロール
+  const contentContainer = document.getElementById('handover-content');
+  if (contentContainer) {
+    contentContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 }
 
 // Tasks Functions
@@ -920,8 +1033,14 @@ async function renderTaskFilters() {
     appData.priorities.map(priority => `<option value="${priority.id}">${priority.name}</option>`).join('');
   
   // Add event listeners
-  deptFilter.addEventListener('change', renderTasksGrid);
-  priorityFilter.addEventListener('change', renderTasksGrid);
+  deptFilter.addEventListener('change', () => {
+    currentTaskPage = 1; // フィルタ変更時はページリセット
+    renderTasksGrid();
+  });
+  priorityFilter.addEventListener('change', () => {
+    currentTaskPage = 1; // フィルタ変更時はページリセット
+    renderTasksGrid();
+  });
 }
 
 function renderTasksGrid() {
@@ -960,7 +1079,12 @@ function renderTasksGrid() {
     return;
   }
   
-  container.innerHTML = filteredTasks.map(task => `
+  // ページネーション適用
+  const paginationInfo = paginateArray(filteredTasks, currentTaskPage);
+  const paginatedTasks = paginationInfo.items;
+  
+  // タスクカードのHTML生成
+  const taskCardsHTML = paginatedTasks.map(task => `
     <div class="task-card">
       <div class="task-header">
         <h4 class="task-title">${task.title}</h4>
@@ -1040,11 +1164,32 @@ function renderTasksGrid() {
     </div>
   `).join('');
   
+  // ページネーションコントロールのHTML生成
+  const paginationHTML = createPaginationHTML(paginationInfo, 'changeTaskPage');
+  
+  // コンテンツエリアにHTML設定
+  container.innerHTML = `
+    ${taskCardsHTML}
+    ${paginationHTML}
+  `;
+  
   // Apply stagger animation to task cards
   setTimeout(() => {
     applyStaggerAnimation(container, '.task-card');
     initializeAnimations();
   }, 100);
+}
+
+// タスクのページ変更関数
+function changeTaskPage(newPage) {
+  currentTaskPage = newPage;
+  renderTasksGrid();
+  
+  // ページ変更時は先頭にスクロール
+  const container = document.getElementById('tasks-grid');
+  if (container) {
+    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 }
 
 async function updateTaskStatus(taskId, newStatus) {
@@ -1196,6 +1341,7 @@ function initializeSearchFunctionality() {
   if (handoverSearchInput) {
     handoverSearchInput.addEventListener('input', (e) => {
       handoverSearchQuery = e.target.value;
+      currentHandoverPage = 1; // 検索時はページリセット
       renderHandoverContent();
     });
   }
@@ -1204,6 +1350,7 @@ function initializeSearchFunctionality() {
     handoverSearchClear.addEventListener('click', () => {
       handoverSearchQuery = '';
       handoverSearchInput.value = '';
+      currentHandoverPage = 1; // 検索クリア時もページリセット
       renderHandoverContent();
     });
   }
@@ -1215,6 +1362,7 @@ function initializeSearchFunctionality() {
   if (taskSearchInput) {
     taskSearchInput.addEventListener('input', (e) => {
       taskSearchQuery = e.target.value;
+      currentTaskPage = 1; // 検索時はページリセット
       renderTasksGrid();
     });
   }
@@ -1223,6 +1371,7 @@ function initializeSearchFunctionality() {
     taskSearchClear.addEventListener('click', () => {
       taskSearchQuery = '';
       taskSearchInput.value = '';
+      currentTaskPage = 1; // 検索クリア時もページリセット
       renderTasksGrid();
     });
   }
