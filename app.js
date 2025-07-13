@@ -692,6 +692,15 @@ function renderDashboard() {
   
   renderScheduleList('today-schedule', todayStr);
   renderScheduleList('tomorrow-schedule', tomorrowStr);
+  
+  // Apply animations after render
+  setTimeout(() => {
+    const dashboardContainer = document.querySelector('#dashboard-section');
+    if (dashboardContainer) {
+      applyStaggerAnimation(dashboardContainer, '.schedule-card');
+      initializeAnimations();
+    }
+  }, 100);
 }
 
 function renderScheduleList(containerId, date) {
@@ -881,6 +890,12 @@ function renderHandoverContent() {
       </div>
     </div>
   `).join('');
+  
+  // Apply stagger animation to handover items
+  setTimeout(() => {
+    applyStaggerAnimation(contentContainer, '.handover-item');
+    initializeAnimations();
+  }, 100);
 }
 
 // Tasks Functions
@@ -1024,6 +1039,12 @@ function renderTasksGrid() {
       </div>
     </div>
   `).join('');
+  
+  // Apply stagger animation to task cards
+  setTimeout(() => {
+    applyStaggerAnimation(container, '.task-card');
+    initializeAnimations();
+  }, 100);
 }
 
 async function updateTaskStatus(taskId, newStatus) {
@@ -2688,6 +2709,94 @@ function initializeSidebarIcons() {
   console.log('Sidebar icons initialized');
 }
 
+// Enhanced Animation Functions
+function applyStaggerAnimation(container, selector = '') {
+  const items = container.querySelectorAll(selector || '.task-card, .handover-item, .schedule-item, .schedule-card');
+  items.forEach((item, index) => {
+    // Remove existing animation classes
+    item.classList.remove('stagger-animation');
+    
+    // Add animation class with delay
+    setTimeout(() => {
+      item.classList.add('stagger-animation');
+    }, 50); // Small delay to ensure DOM is ready
+  });
+}
+
+function addRippleEffect(button) {
+  if (!button.classList.contains('ripple-button')) {
+    button.classList.add('ripple-button');
+  }
+}
+
+function applyEnhancedHover(elements) {
+  elements.forEach(element => {
+    if (!element.classList.contains('enhanced-hover')) {
+      element.classList.add('enhanced-hover');
+    }
+  });
+}
+
+function addPageTransition(direction = 'right') {
+  const contentSections = document.querySelectorAll('.content-section');
+  contentSections.forEach(section => {
+    section.classList.remove('page-transition', 'from-left');
+    if (direction === 'left') {
+      section.classList.add('page-transition', 'from-left');
+    } else {
+      section.classList.add('page-transition');
+    }
+  });
+}
+
+function addUrgentGlow(elements) {
+  elements.forEach(element => {
+    if (!element.classList.contains('urgent-glow')) {
+      element.classList.add('urgent-glow');
+    }
+  });
+}
+
+function addFloatingAnimation(elements) {
+  elements.forEach(element => {
+    if (!element.classList.contains('floating')) {
+      element.classList.add('floating');
+    }
+  });
+}
+
+function addInteractiveFeedback(elements) {
+  elements.forEach(element => {
+    if (!element.classList.contains('interactive-feedback')) {
+      element.classList.add('interactive-feedback');
+    }
+  });
+}
+
+// Initialize all animations
+function initializeAnimations() {
+  // Apply enhanced hover effects to cards
+  const cards = document.querySelectorAll('.schedule-card, .task-card, .handover-item');
+  applyEnhancedHover(cards);
+  
+  // Add ripple effects to buttons
+  const buttons = document.querySelectorAll('.btn');
+  buttons.forEach(addRippleEffect);
+  
+  // Add interactive feedback to clickable elements
+  const interactiveElements = document.querySelectorAll('button, .tab-button, .calendar-day');
+  addInteractiveFeedback(interactiveElements);
+  
+  // Add floating animation to important notifications
+  const urgentElements = document.querySelectorAll('.priority-urgent');
+  addFloatingAnimation(urgentElements);
+  
+  // Add glow effect to urgent items
+  addUrgentGlow(urgentElements);
+  
+  console.log('Enhanced animations initialized');
+}
+
 // Expose functions globally for onclick handlers
 window.showCommentModal = showCommentModal;
 window.showFileUploadModal = showFileUploadModal;
@@ -2716,6 +2825,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initializeStorageDashboard();
   initializeCalendarNavigation();
   initializeSearchFunctionality();
+  initializeAnimations();
 });
 
 // ストレージダッシュボード初期化
