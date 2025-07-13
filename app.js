@@ -2070,7 +2070,7 @@ async function addHandover(event) {
     title: formData.get('title'),
     description: formData.get('description'),
     priority: formData.get('priority'),
-    status: 'pending'
+    status: 'handover_pending'
   };
   
   try {
