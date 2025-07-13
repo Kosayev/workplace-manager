@@ -40,16 +40,16 @@
   --font-family-base: "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
   --font-family-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
   
-  /* Golden Ratio Font Scale (φ = 1.618) - Base: 16px */
-  --font-size-xs: 10px;        /* 16 ÷ 1.618 ≈ 9.9px */
-  --font-size-sm: 12px;        /* 16 ÷ 1.272 ≈ 12.6px */
-  --font-size-base: 16px;      /* Base size */
-  --font-size-md: 20px;        /* 16 × 1.272 ≈ 20.4px */
-  --font-size-lg: 26px;        /* 16 × 1.618 ≈ 25.9px */
-  --font-size-xl: 32px;        /* 16 × 2.058 ≈ 32.9px */
-  --font-size-2xl: 42px;       /* 16 × 1.618² ≈ 41.9px */
-  --font-size-3xl: 68px;       /* 16 × 1.618³ ≈ 67.8px */
-  --font-size-4xl: 110px;      /* 16 × 1.618⁴ ≈ 109.7px */
+  /* Font Scale - Optimized for Japanese UI */
+  --font-size-xs: 11px;
+  --font-size-sm: 12px;
+  --font-size-base: 14px;
+  --font-size-md: 14px;
+  --font-size-lg: 16px;
+  --font-size-xl: 18px;
+  --font-size-2xl: 20px;
+  --font-size-3xl: 24px;
+  --font-size-4xl: 30px;
   
   /* Japanese Typography Weights */
   --font-weight-light: 300;
@@ -300,7 +300,7 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* Typography Hierarchy - Golden Ratio Scale */
+/* Typography Hierarchy - UI Optimized Scale */
 h1, .text-4xl {
   font-size: var(--font-size-4xl);
   font-weight: var(--font-weight-heavy);
