@@ -1105,8 +1105,17 @@ body {
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   color: white;
-  min-width: 60px;
+  min-width: 65px;
+  max-width: 80px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
 }
 
 .handover-details {
@@ -1196,6 +1205,17 @@ body {
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
   color: white;
+  min-width: 65px;
+  max-width: 80px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 0;
 }
 
 .task-description {
@@ -2174,6 +2194,13 @@ textarea {
     font-size: var(--font-size-xs);
     font-weight: var(--font-weight-medium);
     align-self: flex-start;
+    min-width: 80px;
+    max-width: 100px;
+    height: 32px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-shrink: 0;
   }
   
   .mobile-only.priority-urgent {
